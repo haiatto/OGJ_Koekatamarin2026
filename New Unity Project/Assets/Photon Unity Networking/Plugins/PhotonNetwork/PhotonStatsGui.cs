@@ -1,6 +1,8 @@
+using System;
 
-using ExitGames.Client.Photon;
 using UnityEngine;
+using System.Collections;
+using ExitGames.Client.Photon;
 
 
 /// <summary>

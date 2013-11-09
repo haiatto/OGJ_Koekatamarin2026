@@ -8,6 +8,7 @@
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
 
+using System;
 using ExitGames.Client.Photon;
 
 /// <summary>
@@ -113,8 +114,7 @@ internal enum JoinType
 {
     CreateGame,
     JoinGame,
-    JoinRandomGame,
-    JoinOrCreateOnDemand
+    JoinRandomGame
 }
 
 
@@ -327,7 +327,7 @@ public enum DisconnectCause
 
     /// <summary>Connection timed out.
     /// Possible cause: Remote server not running or required ports blocked (due to router or firewall).</summary>
-    [System.Obsolete("Replaced by clearer: DisconnectByClientTimeout")]
+    [Obsolete("Replaced by clearer: DisconnectByClientTimeout")]
     TimeoutDisconnect = StatusCode.TimeoutDisconnect,
 
     /// <summary>Timeout disconnect by client (which decided an ACK was missing for too long).</summary>
@@ -335,10 +335,10 @@ public enum DisconnectCause
     
     /// <summary>Exception in the receive-loop.
     /// Possible cause: Socket failure.</summary>
-    InternalReceiveException = StatusCode.ExceptionOnReceive,
+    InternalReceiveException = StatusCode.InternalReceiveException,
 
     /// <summary>Server actively disconnected this client.</summary>
-    [System.Obsolete("Replaced by clearer: DisconnectByServerTimeout")]
+    [Obsolete("Replaced by clearer: DisconnectByServerTimeout")]
     DisconnectByServer = StatusCode.DisconnectByServer,
 
     /// <summary>Timeout disconnect by server (which decided an ACK was missing for too long).</summary>

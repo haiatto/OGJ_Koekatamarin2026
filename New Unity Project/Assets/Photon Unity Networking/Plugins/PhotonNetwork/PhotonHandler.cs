@@ -4,10 +4,11 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System;
+using System.Threading;
 using ExitGames.Client.Photon;
 using UnityEngine;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
-
+using System.Collections;
 
 /// <summary>
 /// Internal Monobehaviour that allows Photon to run an Update loop.
@@ -57,7 +58,7 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
             return;
         }
 
-        if (PhotonNetwork.connectionStateDetailed == PeerState.PeerCreated || PhotonNetwork.connectionStateDetailed == PeerState.Disconnected || PhotonNetwork.offlineMode)
+        if (PhotonNetwork.connectionStateDetailed == PeerState.PeerCreated || PhotonNetwork.connectionStateDetailed == PeerState.Disconnected)
         {
             return;
         }
@@ -137,13 +138,11 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
 
     public static void StartFallbackSendAckThread()
     {
-        if (sendThreadShouldRun)
-        {
-            return;
-        }
-
         sendThreadShouldRun = true;
-        SupportClass.CallInBackground(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
+        Thread sendThread = new Thread(FallbackSendAckThread);
+        sendThread.Name = "FallbackSendAck";
+        sendThread.IsBackground = true;
+        sendThread.Start();
     }
 
     public static void StopFallbackSendAckThread()
@@ -151,14 +150,13 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
         sendThreadShouldRun = false;
     }
 
-    public static bool FallbackSendAckThread()
+    public static void FallbackSendAckThread()
     {
-        if (sendThreadShouldRun && PhotonNetwork.networkingPeer != null)
+        while (sendThreadShouldRun && PhotonNetwork.networkingPeer != null)
         {
             PhotonNetwork.networkingPeer.SendAcksOnly();
+            Thread.Sleep((PhotonNetwork.isMessageQueueRunning) ? 500 : 50);
         }
-
-        return sendThreadShouldRun;
     }
 
     #region Implementation of IPhotonPeerListener

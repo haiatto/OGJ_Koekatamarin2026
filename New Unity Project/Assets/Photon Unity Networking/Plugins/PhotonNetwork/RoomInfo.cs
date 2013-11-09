@@ -10,8 +10,7 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using ExitGames.Client.Photon;
-
+using System.Collections;
 
 /// <summary>
 /// A simplified room with just the info required to list and join, used for the room listing in the lobby.

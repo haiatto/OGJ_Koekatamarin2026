@@ -10,8 +10,7 @@
 // ----------------------------------------------------------------------------
 
 using UnityEngine;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
-
+using System.Collections;
 
 /// <summary>
 /// Summarizes a "player" within a room, identified (in that room) by actorID.
