@@ -1,5 +1,5 @@
-New Unity Project/Library
-New Unity Project/Temp
+Library
+Temp
 *.pidb
 *.unityproj
 *.sln
@@ -66,7 +66,6 @@ build/
 *_i.c
 *_p.c
 *.ilk
-*.meta
 *.obj
 *.pch
 *.pdb
