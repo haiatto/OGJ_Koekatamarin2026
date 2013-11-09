@@ -2,6 +2,8 @@
 ## Eclipse
 #################
 
+New Unity Project/Library/
+
 *.pydevproject
 .project
 .metadata
