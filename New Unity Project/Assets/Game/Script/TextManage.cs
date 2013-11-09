@@ -24,6 +24,13 @@ public class TextManage : MonoBehaviour {
 			Text[loopCounter].color=col;
 		}		
 	}
+	public void ChangeColor(Color col,Color col2){
+		int loopCounter;
+		for(loopCounter=0;loopCounter<Text.Length;loopCounter++){
+			Text[loopCounter].color=col;
+		}
+		Text[((int)Text.Length/2)].color=col2;
+	}
 	void DestroySelf(float timer){
 		int loopCounter;
 		for(loopCounter=0;loopCounter<Text.Length;loopCounter++){

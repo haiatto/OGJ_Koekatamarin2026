@@ -1,0 +1,31 @@
+Initialize engine version: 4.2.0f4 (38efbd14869d)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [nvd3dum.dll 8.17.12.6141]
+    Renderer: NVIDIA GeForce 320M     
+    Vendor:   NVIDIA
+    VRAM:     536 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=0 DF24=0 INTZ=1 RAWZ=0 NULL=1 RESZ=0 SlowINTZ=0
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\websocket-sharp.dll (this message is harmless)
+Loading C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\websocket-sharp.dll into Unity Child Domain
+Platform assembly: C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\Photon3Unity3D.dll (this message is harmless)
+Loading C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\Photon3Unity3D.dll into Unity Child Domain
+- Completed reload, in  0.418 seconds
+desktop: 1366x768 60Hz; virtual: 1366x768 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+The referenced script on this Behaviour is missing!
+ 
+(Filename:  Line: 1657)
+
+The referenced script on this Behaviour is missing!
+ 
+(Filename:  Line: 1657)
+
+Platform assembly: C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\yusuWin7\unityProj\OculusGameJam\OGJ_Koekatamarin\New Unity Project\test_Data\Managed\System.dll (this message is harmless)
