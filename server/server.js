@@ -34,10 +34,17 @@ webSocketServer.on('request', function (req) {
 		else{
 		    websocket.send('sended from WebSocket Server' + msg.utf8Data);
 		}
+<<<<<<< HEAD
 		recvText = msg.utf8Data;
 		for(var ii=0; ii < connections.length; ii++)
 		{
 		    connections[ii].send('replay:' + msg.utf8Data);
+=======
+		// 全クライアントに配信
+		for(var ii=0; ii < connections.length; ii++)
+		{
+		    connections[ii].send(msg.utf8Data);
+>>>>>>> 37f1f37db96864e3a3698dd4412a88aae84eb8df
 		}
 	});
 

@@ -64,7 +64,10 @@ var webSocket;
 	        else{
 	            $("#recognizedText").text(results[i][0].transcript);
 	        }
+<<<<<<< HEAD
 	        console.log(results[i][0].transcript + ":" + i);
+=======
+>>>>>>> 37f1f37db96864e3a3698dd4412a88aae84eb8df
 	        webSocket.send(results[i][0].transcript);
 	    }
 	};
