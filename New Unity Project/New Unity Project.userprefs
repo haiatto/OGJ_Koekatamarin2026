@@ -1,7 +1,8 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Game\Script\KoeKatamarinBehaviourScript.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Game\Script\shoot.cs">
     <Files>
+      <File FileName="Assets\Game\Script\shoot.cs" Line="36" Column="1" />
       <File FileName="Assets\Game\Script\KoeKatamarinBehaviourScript.cs" Line="13" Column="27" />
     </Files>
   </MonoDevelop.Ide.Workbench>
