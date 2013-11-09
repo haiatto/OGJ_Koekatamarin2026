@@ -35,10 +35,12 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
 					continue;
 				}
 				putMsg = msg.Substring(ii);
+				break;
 			}
 			if(putMsg.Length!=0)
 			{
 				PlayerObj.SendMessage("Shoot",putMsg);
+				Debug.Log(putMsg);
 			}
 			lastMsg = msg;
 		}
@@ -84,7 +86,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
         ws.OnMessage += (sender, e) =>
         {
             string s = e.Data;
-            Debug.Log(string.Format( "Receive {0}",s));
+            //Debug.Log(string.Format( "Receive {0}",s));
 			
 			msgQue.Add(e.Data);
 #if false
@@ -100,7 +102,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
     }
  
     void SendChatMessage(){
-        Debug.Log("Send message " + message);
+        //Debug.Log("Send message " + message);
         ws.Send(message);
         this.message = "";
     }
