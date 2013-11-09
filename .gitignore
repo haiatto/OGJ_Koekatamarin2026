@@ -1,8 +1,15 @@
+Library
+Temp
+*.pidb
+*.unityproj
+*.sln
+*.userprefs
+
+
 #################
 ## Eclipse
 #################
 
-New Unity Project/Library/*
 
 *.pydevproject
 .project
