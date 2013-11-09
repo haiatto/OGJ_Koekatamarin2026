@@ -31,6 +31,9 @@ public class shoot : MonoBehaviour {
 		GameObject createBlock	= (GameObject)Instantiate(this.BlockPrefab, PlayerObj.transform.position, OVR_angle);
 		
 		createBlock.SendMessage("ChangeText",mes);
+		if(Random.Range(0,10)==0){
+		createBlock.SendMessage("ChangeColor",new Color(1.0f,0.0f,0.0f));
+		}
 		createBlock.rigidbody.velocity=OVR_angle*new Vector3(0,5,ShootPow);
 //		this.gameObject.rigidbody.velocity=new Vector3(ShootPow,0,0);
 		
