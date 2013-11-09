@@ -12,16 +12,24 @@ using WebSocketSharp;
  
 public class KoeKatamarinBehaviourScript : MonoBehaviour {
  
+	GameObject PlayerObj;
+	
+	List<string> msgQue = new List<string>();
+		
     // Use this for initialization
     void Start () {
+		PlayerObj=GameObject.Find("Player");
         Connect();
     }
  
     // Update is called once per frame
     void Update () {
- 
+ 		foreach(var msg in msgQue)
+		{
+			PlayerObj.SendMessage("Shoot",msg);
+		}
+		msgQue.Clear();
     }
-#if true
     /// <summary>
     /// The message which store current input text.
     /// </summary>
@@ -30,13 +38,12 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
     /// The list of chat message.
     /// </summary>
     List<string> messages = new List<string>();
-#endif
+
     /// <summary>
     /// Raises the GU event.
     ///
     /// </summary>
     void OnGUI(){
-#if true
         // Input text
         message = GUI.TextArea(new Rect(0,10,Screen.width * 0.7f,Screen.height / 10),message);
  
@@ -51,13 +58,10 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
         GUI.Label(
             new Rect(0,Screen.height * 0.1f + 10,Screen.width * 0.8f,height),
             l);
-#endif
     }
-#if true
     WebSocket ws;
-#endif
+
     void Connect(){
-#if true
         ws =  new WebSocket("ws://localhost:8888");
  
         // called when websocket messages come.
@@ -65,29 +69,30 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
         {
             string s = e.Data;
             Debug.Log(string.Format( "Receive {0}",s));
+			
+			msgQue.Add(e.Data);
+#if true
             messages.Add("> " + e.Data);
             if(messages.Count > 10){
                 messages.RemoveAt(0);
             }
+#endif
         };
  
         ws.Connect();
         Debug.Log("Connect to " + ws.Url);
-#endif
     }
  
     void SendChatMessage(){
-#if true
         Debug.Log("Send message " + message);
         ws.Send(message);
         this.message = "";
-#endif
     }
 }
 #endif
 
 
-#if true
+#if false
 public class KoeInputServerScript : MonoBehaviour {
 	
 	IPEndPoint remoteIP;
