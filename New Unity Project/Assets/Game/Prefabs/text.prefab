@@ -96,7 +96,6 @@ GameObject:
   - 54: {fileID: 5400000}
   - 65: {fileID: 6500000}
   - 114: {fileID: 11400000}
-  - 114: {fileID: 11400002}
   m_Layer: 0
   m_Name: text
   m_TagString: Untagged
@@ -408,23 +407,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abf7ea0a0265bba4c807de68749a9095, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestroyTime: 5
   Text:
   - {fileID: 10200008}
   - {fileID: 10200000}
   - {fileID: 10200002}
   - {fileID: 10200004}
   - {fileID: 10200006}
---- !u!114 &11400002
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 100010}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6299ef3339e8e20458de84a9eb1d6f3d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
