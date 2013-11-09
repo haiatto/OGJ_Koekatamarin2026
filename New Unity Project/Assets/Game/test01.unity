@@ -102,11 +102,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_EditorClassIdentifier: 
-  m_EditorClassIdentifier: 
-  m_EditorClassIdentifier: 
-  m_EditorClassIdentifier: 
-  m_EditorClassIdentifier: 
-  m_EditorClassIdentifier: 
 --- !u!4 &94898215
 Transform:
   m_ObjectHideFlags: 0
@@ -338,7 +333,6 @@ GameObject:
   - 54: {fileID: 614921651}
   - 65: {fileID: 614921652}
   - 114: {fileID: 614921653}
-  - 114: {fileID: 614921654}
   m_Layer: 0
   m_Name: text
   m_TagString: Untagged
@@ -403,24 +397,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abf7ea0a0265bba4c807de68749a9095, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DestroyTime: 5
   Text:
   - {fileID: 815723089}
   - {fileID: 835339251}
   - {fileID: 887298678}
   - {fileID: 997675286}
   - {fileID: 419633872}
---- !u!114 &614921654
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 11400002, guid: a9daa7ab4e9a60a418de53c4d0edb03e,
-    type: 2}
-  m_PrefabInternal: {fileID: 1602587959}
-  m_GameObject: {fileID: 614921649}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6299ef3339e8e20458de84a9eb1d6f3d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &669200233
 GameObject:
   m_ObjectHideFlags: 0

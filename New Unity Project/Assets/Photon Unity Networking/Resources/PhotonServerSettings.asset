@@ -11,10 +11,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f3758f8f58fdef43803eb9be1df0608, type: 3}
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
-  HostType: 0
-  ServerAddress: 127.0.0.1
+  HostType: 1
+  ServerAddress: app-eu.exitgamescloud.com
   ServerPort: 5055
-  AppID: 
+  AppID: c2d2aba4-f786-438b-b077-dccd00973b95
   RpcList:
   - Marco
   - Polo
