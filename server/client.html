@@ -1,0 +1,74 @@
+
+
+
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<input id="message" type="text"><button id="send">send</button>
+<div id="output"></div>
+
+<input type="button" value="音声認識開始" onclick="recognition.start();"/>
+<input type="button" value="音声認識終了" onclick="recognition.stop();"/>
+<div id="state">停止中</div>
+<div id="recognizedText"></div>
+
+<script src="http://code.jquery.com/jquery.min.js"></script>
+<script>
+
+var webSocket;
+
+(function() {
+	var ws = new WebSocket("ws://localhost:8888");
+	var output = document.getElementById('output');
+	var send = document.getElementById('send');
+
+    webSocket = ws;
+
+	function logStr(eventStr, msg) {
+		return '<div>' + eventStr + ':' + msg + '</div>';
+	}
+
+	send.addEventListener('click', function() {
+		var msg = document.getElementById('message').value;
+		ws.send(msg);
+		output.innerHTML += logStr('send', msg);
+	});
+
+	ws.onmessage = function(e) {
+		output.innerHTML += logStr('recieved', e.data);
+	};
+
+	ws.onclose = function (e) {
+		output.innerHTML += logStr('disconnect', e.code + ' - ' + e.type);
+	};
+}());
+
+	var recognition = new webkitSpeechRecognition();
+	recognition.lang = "ja-JP";
+	
+	//中間結果の表示オン
+	recognition.interimResults = true;
+	//連続音声認識ＯＮ（バックグラウンドで動く）
+	recognition.continuous = true;
+
+	recognition.onresult = function(event){
+	    var results = event.results;
+	    for (var i = event.resultIndex; i<results.length; i++){
+	        //認識の最終結果
+	        if(results[i].isFinal){
+	            $("#recognizedText").text(results[i][0].transcript);
+	        }
+	        //認識の中間結果
+	        else{
+	            $("#recognizedText").text(results[i][0].transcript);
+	        }
+	        console.log(results[i][0].transcript + ":" + i);
+	        webSocket.send(results[i][0].transcript);
+	    }
+	};
+	
+</script>
+</body>
+</html>
