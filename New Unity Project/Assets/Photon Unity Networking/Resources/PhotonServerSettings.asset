@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
   HostType: 1
-  ServerAddress: app-eu.exitgamescloud.com
+  ServerAddress: app-jp.exitgamescloud.com
   ServerPort: 5055
   AppID: c2d2aba4-f786-438b-b077-dccd00973b95
   RpcList:
