@@ -30,11 +30,14 @@ public class shoot : MonoBehaviour {
 		OVRDevice.GetPredictedOrientation(0, ref OVR_angle);
 		GameObject createBlock	= (GameObject)Instantiate(this.BlockPrefab, PlayerObj.transform.position, OVR_angle);
 		
+		var shootWorldQuat = PlayerObj.transform.rotation;
+		
 		createBlock.SendMessage("ChangeText",mes);
-		if(Random.Range(0,10)==0){
-		createBlock.SendMessage("ChangeColor",new Color(1.0f,0.0f,0.0f));
+		if(Random.Range(0,3)==0){
+			createBlock.SendMessage("ChangeColor",new Color(1.0f,0.0f,0.0f));
 		}
-		createBlock.rigidbody.velocity=OVR_angle*new Vector3(0,5,ShootPow);
+		
+		createBlock.rigidbody.velocity=shootWorldQuat*new Vector3(0,5,ShootPow);
 //		this.gameObject.rigidbody.velocity=new Vector3(ShootPow,0,0);
 		
 		
