@@ -15,6 +15,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
 	GameObject PlayerObj;
 	
 	List<string> msgQue = new List<string>();
+	string lastMsg="";
 		
     // Use this for initialization
     void Start () {
@@ -26,7 +27,20 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
     void Update () {
  		foreach(var msg in msgQue)
 		{
-			PlayerObj.SendMessage("Shoot",msg);
+			string putMsg="";
+			for(int ii=0; ii < msg.Length;ii++)
+			{
+				if(ii<lastMsg.Length && (msg[ii] == lastMsg[ii]))
+				{
+					continue;
+				}
+				putMsg = msg.Substring(ii);
+			}
+			if(putMsg.Length!=0)
+			{
+				PlayerObj.SendMessage("Shoot",putMsg);
+			}
+			lastMsg = msg;
 		}
 		msgQue.Clear();
     }
@@ -39,6 +53,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
     /// </summary>
     List<string> messages = new List<string>();
 
+#if false
     /// <summary>
     /// Raises the GU event.
     ///
@@ -59,6 +74,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
             new Rect(0,Screen.height * 0.1f + 10,Screen.width * 0.8f,height),
             l);
     }
+#endif
     WebSocket ws;
 
     void Connect(){
@@ -71,7 +87,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
             Debug.Log(string.Format( "Receive {0}",s));
 			
 			msgQue.Add(e.Data);
-#if true
+#if false
             messages.Add("> " + e.Data);
             if(messages.Count > 10){
                 messages.RemoveAt(0);

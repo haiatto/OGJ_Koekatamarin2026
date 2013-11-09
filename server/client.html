@@ -64,7 +64,6 @@ var webSocket;
 	        else{
 	            $("#recognizedText").text(results[i][0].transcript);
 	        }
-	        console.log(results[i][0].transcript + ":" + i);
 	        webSocket.send(results[i][0].transcript);
 	    }
 	};
