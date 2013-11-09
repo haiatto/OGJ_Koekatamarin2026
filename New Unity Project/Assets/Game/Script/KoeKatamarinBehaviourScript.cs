@@ -21,8 +21,8 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
     void Start () {
 		PlayerObj=GameObject.Find("Player");
         Connect();
-    }
- 
+	}
+		
     // Update is called once per frame
     void Update () {
  		foreach(var msg in msgQue)
@@ -39,7 +39,14 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
 			}
 			if(putMsg.Length!=0)
 			{
-				PlayerObj.SendMessage("Shoot",putMsg);
+				PlayerObj.GetComponent<shoot>().Shoot(
+					putMsg,
+					(GameObject gameObj)=>
+					{			
+						var obj = gameObj.GetComponent<TextManage>();
+						obj.ChangeColor(new Color(0.0f,0.0f,0.0f));
+					}
+				);
 				Debug.Log(putMsg);
 			}
 			lastMsg = msg;

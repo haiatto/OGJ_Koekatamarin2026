@@ -3,6 +3,8 @@ using System.Collections;
 
 public class shoot : MonoBehaviour {
 	
+	public delegate void ApplyShootFunc(GameObject gameObject);
+	
 	public GameObject BlockPrefab;
 	public int ShootPow=10;
 		
@@ -19,13 +21,13 @@ public class shoot : MonoBehaviour {
 	void Update () {
 //		if(Input.GetKey(KeyCode.B)){
 		if (a%60==0){
- 			Shoot("a");}
+ 			Shoot("a",null);}
 		a++;
 			
 		//}
 	
 	}
-	void Shoot(string mes){
+	public void Shoot(string mes, ApplyShootFunc applyFunc){
 
 		OVRDevice.GetPredictedOrientation(0, ref OVR_angle);
 		GameObject createBlock	= (GameObject)Instantiate(this.BlockPrefab, PlayerObj.transform.position, OVR_angle);
@@ -38,6 +40,12 @@ public class shoot : MonoBehaviour {
 		}
 		
 		createBlock.rigidbody.velocity=shootWorldQuat*new Vector3(0,5,ShootPow);
+		
+		if(null!=applyFunc)
+		{
+			applyFunc(createBlock);
+		}
+		
 //		this.gameObject.rigidbody.velocity=new Vector3(ShootPow,0,0);
 		
 		

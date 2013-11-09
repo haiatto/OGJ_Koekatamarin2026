@@ -25,7 +25,7 @@ public class TextManage : MonoBehaviour {
 	//	GameObject childObject = gameObject.transform.FindChild("Text000").gameObject;
 		
 	}
-	void ChangeColor(Color col){
+	public void ChangeColor(Color col){
 		int loopCounter;
 		for(loopCounter=0;loopCounter<Text.Length;loopCounter++){
 			Text[loopCounter].color=col;
