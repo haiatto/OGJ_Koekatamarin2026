@@ -3,14 +3,18 @@ using System.Collections;
 
 public class TextManage : MonoBehaviour {
 	
+	public float DestroyTime=5.0f;
 	public TextMesh []Text;
+//	private float Timer;
 	// Use this for initialization
 	void Start () {
-		
+//		Timer=Time.time+DestroyTime;
+		Destroy(this, DestroyTime);
 	}
 	
 	// Update is called once per frame
 	void Update () {
+//		DestroySelf();
 		
 	}
 	void ChangeText(string mes){
@@ -28,4 +32,11 @@ public class TextManage : MonoBehaviour {
 		}
 		
 	}
+/*	void DestroySelf(){
+		if(Timer<Time.time){
+			Destroy(this);
+		}
+		
+	}
+*/
 }
