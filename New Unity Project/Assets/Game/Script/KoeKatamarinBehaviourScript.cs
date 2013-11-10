@@ -103,7 +103,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
     WebSocket ws;
 
     void Connect(){
-        ws =  new WebSocket("ws://localhost:8888");
+        ws =  new WebSocket("wss://localhost:8888");
  
         // called when websocket messages come.
         ws.OnMessage += (sender, e) =>
