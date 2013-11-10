@@ -85,12 +85,12 @@ Material:
     m_Floats:
       data:
         first:
-          name: _FresnelScale
-        second: .389714301
-      data:
-        first:
           name: _Shininess
         second: 349.137939
+      data:
+        first:
+          name: _FresnelScale
+        second: .389714301
       data:
         first:
           name: _HeightDisplacement
@@ -100,6 +100,10 @@ Material:
           name: _NormalsDisplacement
         second: 72.7272797
     m_Colors:
+      data:
+        first:
+          name: _Color
+        second: {r: 1, g: 1, b: 1, a: 1}
       data:
         first:
           name: _DistortParams
@@ -164,10 +168,6 @@ Material:
         first:
           name: _GDirectionCD
         second: {r: -.300000012, g: -.899999976, b: .5, a: .5}
-      data:
-        first:
-          name: _Color
-        second: {r: 1, g: 1, b: 1, a: 1}
       data:
         first:
           name: _Foam
