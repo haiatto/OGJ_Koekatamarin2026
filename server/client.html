@@ -55,14 +55,33 @@ var webSocket;
 	        //認識の最終結果
 	        if(results[i].isFinal){
 	            $("#recognizedText").text(results[i][0].transcript);
+	            console.log("end");
 	        }
 	        //認識の中間結果
 	        else{
 	            $("#recognizedText").text(results[i][0].transcript);
+	            console.log("mid");
 	        }
 	        webSocket.send(results[i][0].transcript);
 	    }
 	};
+	
+	recognition.onstart       = function() { console.log("onstart"); }
+	recognition.onerror       = function(event) { 
+	   console.log("onerror"+event); 
+	   timeoutID = window.setTimeout( function(){recognition.start();}, 2 )
+	}
+	recognition.onend         = function() { 
+	   console.log("onend"); 
+	   timeoutID = window.setTimeout( function(){recognition.start();}, 2 )
+	}
+	recognition.onaudiostart  = function() { console.log("onaudiostart "); }
+	recognition.onsoundstart  = function() { console.log("onsoundstart "); }
+	recognition.onspeechstart = function() { console.log("onspeechstart"); }
+	recognition.onspeechend   = function() { console.log("onspeechend  "); }
+	recognition.onsoundend    = function() { console.log("onsoundend   "); }
+	recognition.onaudioend    = function() { console.log("onaudioend   "); }
+	recognition.onnomatch     = function() { console.log("onnomatch    "); }
 	
 </script>
 </body>

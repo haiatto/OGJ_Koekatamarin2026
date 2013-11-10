@@ -1,13 +1,23 @@
 var http     = require('http');
+//var https     = require('https');
+var fs       = require('fs');
 var WSServer = require('websocket').server;
 
 var url        = require('url');
 var clientHtml = require('fs').readFileSync('client.html');
+var options = {pfx: fs.readFileSync('test_key.pfx'),
+               passphrase: '123456'};
 
 var plainHttpServer = http.createServer(function(req, res) {
 	res.writeHead(200, { 'Content-Type': 'text/html'});
 	res.end(clientHtml);
 }).listen(8888);
+
+//var plainHttpServer = https.createServer(options, function(req, res) {
+//	res.writeHead(200, { 'Content-Type': 'text/html'});
+//	res.end(clientHtml);
+//}).listen(8888);
+
 
 var webSocketServer = new WSServer({httpServer: plainHttpServer});
 var accept          = ['localhost', '127.0.0.1'];
