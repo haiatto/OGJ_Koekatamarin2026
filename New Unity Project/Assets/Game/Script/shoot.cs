@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class shoot : MonoBehaviour {
@@ -31,15 +31,15 @@ public class shoot : MonoBehaviour {
 	public void Shoot(string mes, ApplyShootFunc applyFunc){
 
 		OVRDevice.GetPredictedOrientation(0, ref OVR_angle);
-		GameObject createBlock	= (GameObject)Instantiate(this.BlockPrefab, PlayerObj.transform.position, OVR_angle);
-		
 		var shootWorldQuat = PlayerObj.transform.rotation;
+		
+		GameObject createBlock	= (GameObject)Instantiate(this.BlockPrefab, PlayerObj.transform.position, shootWorldQuat);
+		
 		
 		createBlock.SendMessage("ChangeText",mes);
 		if(Random.Range(0,3)==0){
 			createBlock.SendMessage("ChangeColor",new Color(1.0f,0.0f,0.0f));
 		}
-		
 		createBlock.rigidbody.velocity=shootWorldQuat*new Vector3(0,5,ShootPow);
 		
 		if(null!=applyFunc)
