@@ -53,7 +53,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
 						);
 				}
 				else
-				{/*
+				{
 					PlayerObj.GetComponent<shoot>().Shoot(
 						putMsg,
 						(GameObject gameObj)=>
@@ -61,7 +61,7 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
 							var obj = gameObj.GetComponent<TextManage>();
 							obj.ChangeColor(new Color(0.0f,0.0f,0.0f),new Color(1.0f,1.0f,1.0f));
 						}
-					);*/
+					);
 				}
 				Debug.Log(putMsg);
 			}
