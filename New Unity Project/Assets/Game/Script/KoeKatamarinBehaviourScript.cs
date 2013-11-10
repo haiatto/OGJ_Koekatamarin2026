@@ -13,6 +13,7 @@ using WebSocketSharp;
 public class KoeKatamarinBehaviourScript : MonoBehaviour {
  
 	GameObject PlayerObj;
+	multiShoot MultiShot;
 	
 	List<string> msgQue = new List<string>();
 	string lastMsg="";
@@ -20,7 +21,11 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
     // Use this for initialization
     void Start () {
 		PlayerObj=GameObject.Find("Player");
-        Connect();
+		if(null!=GameObject.Find("MultiShoot"))
+		{
+			MultiShot=GameObject.Find("MultiShoot").GetComponent<multiShoot>();
+		}
+		Connect();
 	}
 		
     // Update is called once per frame
@@ -39,14 +44,25 @@ public class KoeKatamarinBehaviourScript : MonoBehaviour {
 			}
 			if(putMsg.Length!=0)
 			{
-				PlayerObj.GetComponent<shoot>().Shoot(
-					putMsg,
-					(GameObject gameObj)=>
-					{			
-						var obj = gameObj.GetComponent<TextManage>();
-						obj.ChangeColor(new Color(0.0f,0.0f,0.0f),new Color(1.0f,1.0f,1.0f));
-					}
-				);
+				if(null!=MultiShot)
+				{
+					MultiShot.photonView.RPC("ShootMulti",PhotonTargets.All,
+						putMsg,
+						PlayerObj.transform.position,
+						PlayerObj.transform.rotation
+						);
+				}
+				else
+				{/*
+					PlayerObj.GetComponent<shoot>().Shoot(
+						putMsg,
+						(GameObject gameObj)=>
+						{			
+							var obj = gameObj.GetComponent<TextManage>();
+							obj.ChangeColor(new Color(0.0f,0.0f,0.0f),new Color(1.0f,1.0f,1.0f));
+						}
+					);*/
+				}
 				Debug.Log(putMsg);
 			}
 			lastMsg = msg;

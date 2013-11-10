@@ -21,7 +21,8 @@ public class shoot : MonoBehaviour {
 	void Update () {
 //		if(Input.GetKey(KeyCode.B)){
 		if (a%60==0){
- 			Shoot("a",null);}
+ 			//Shoot("a",null);
+		}
 		a++;
 			
 		//}

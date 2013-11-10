@@ -25,4 +25,9 @@ MonoBehaviour:
   - OnAwakeRPC
   - DestroyRpc
   - SendChatMessage
+  - MultiShoot
+  - MultiShootXX
+  - ShotMultiXX
+  - ShotMulti
+  - ShootMulti
   DisableAutoOpenWizard: 0

@@ -146,6 +146,10 @@ Material:
         second: {r: .0139923692, g: -.173590809, b: -.984718621, a: 0}
       data:
         first:
+          name: _Foam
+        second: {r: .327586204, g: .7471264, b: 0, a: 0}
+      data:
+        first:
           name: _GAmplitude
         second: {r: .300000012, g: .200000003, b: .25, a: .25}
       data:
@@ -168,10 +172,6 @@ Material:
         first:
           name: _GDirectionCD
         second: {r: -.300000012, g: -.899999976, b: .5, a: .5}
-      data:
-        first:
-          name: _Foam
-        second: {r: .327586204, g: .7471264, b: 0, a: 0}
       data:
         first:
           name: _DepthColor

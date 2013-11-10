@@ -8,6 +8,10 @@ public class RandomMatchmaker : Photon.MonoBehaviour
     void Start()
     {
         PhotonNetwork.ConnectUsingSettings("0.1");
+		if(string.IsNullOrEmpty(PhotonNetwork.playerName))
+		{
+			PhotonNetwork.playerName = "guest" + Random.Range(1,9999);
+		}
     }
 
     void OnJoinedLobby()
