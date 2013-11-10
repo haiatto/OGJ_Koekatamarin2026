@@ -16,7 +16,9 @@
 var webSocket;
 
 (function() {
-	var ws = new WebSocket("ws://localhost:8888");
+	//var ws = new WebSocket("ws://localhost:8888");
+	var ws = new WebSocket("wss://localhost:8888");
+	
 	var output = document.getElementById('output');
 	var send = document.getElementById('send');
 
@@ -82,6 +84,8 @@ var webSocket;
 	recognition.onsoundend    = function() { console.log("onsoundend   "); }
 	recognition.onaudioend    = function() { console.log("onaudioend   "); }
 	recognition.onnomatch     = function() { console.log("onnomatch    "); }
+	
+	recognition.start();//開いた瞬間に開始しておきます
 	
 </script>
 </body>
