@@ -6,16 +6,46 @@ using System.Collections;
 public class multiShoot : Photon.MonoBehaviour {	
 	public GameObject BlockPrefab;
 	public int ShootPow=10;
+	public int SendIntervelTime = 5;
+	
+	protected int sendIntervelCnt=0;
+	
+	GameObject PlayerObj;
 	
 	// Use this for initialization
 	void Start () {
-	
+		PlayerObj=GameObject.Find("Player");
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	
+		/*
+		if(sendIntervelCnt<0){
+			sendIntervelCnt = SendIntervelTime;
+			//
+			NotifyMyPosDir(PlayerObj.transform.position,
+				           PlayerObj.transform.rotation);
+		}
+		else{
+			sendIntervelCnt--;
+		}*/
 	}
+	/*
+	[RPC]
+	public void NotifyMyPosDir(Vector3 position,
+				               Quaternion rotation, 
+								PhotonMessageInfo mi)
+	{
+		if (mi != null && mi.sender != null)
+		{
+			;
+		}
+		else
+		{
+			;
+		}
+	}
+	*/
     [RPC]
     public void ShootMulti(string mes, Vector3 shotPos,Quaternion shotDir, PhotonMessageInfo mi)
     {

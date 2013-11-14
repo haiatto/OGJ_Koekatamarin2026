@@ -7,11 +7,18 @@ public class RandomMatchmaker : Photon.MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        PhotonNetwork.ConnectUsingSettings("0.1");
+		PhotonNetwork.ConnectUsingSettings("0.1");
 		if(string.IsNullOrEmpty(PhotonNetwork.playerName))
 		{
 			PhotonNetwork.playerName = "guest" + Random.Range(1,9999);
 		}
+		float zPos = Random.Range(0.0f,35.0f);
+		float yPos = (zPos/-7.0f)+5.0f; 
+		zPos-=25.0f;
+		float xPos = Random.Range(0.0f,80.0f);
+		xPos-=40.0f;
+		Vector3 Pos=new Vector3(xPos,yPos,zPos);
+		GameObject.Find("OVRPlayerController").transform.position=Pos;
     }
 
     void OnJoinedLobby()
@@ -31,7 +38,7 @@ public class RandomMatchmaker : Photon.MonoBehaviour
         monster.GetComponent<myThirdPersonController>().isControllable = true;
         myPhotonView = monster.GetComponent<PhotonView>();
     }
-
+	/*
     void OnGUI()
     {
         GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
@@ -50,4 +57,5 @@ public class RandomMatchmaker : Photon.MonoBehaviour
             }
         }
     }
+    */
 }
