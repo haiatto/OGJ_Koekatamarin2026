@@ -3,12 +3,11 @@
 <meta charset="utf-8">
 </head>
 <body>
-<input id="message" type="text"><button id="send">send</button>
-<div id="output"></div>
-
-<input type="button" value="音声認識開始" onclick="recognition.start();"/>
-<input type="button" value="音声認識終了" onclick="recognition.stop();"/>
+<div id="scriptError">Script Error ↑このメッセージが出る場合は…。アドレスバーで禁止されてるマークが出てたら許可してね！（盾のマークが出ててたりしない？）</div>
+<input id="message" type="text"><button id="send">test send</button>
+<input type="button" value="Mic Stop" onclick="recognition.stop();"/>
 <div id="recognizedText"></div>
+<div id="output"></div>
 
 <script src="http://code.jquery.com/jquery.min.js"></script>
 <script>
@@ -16,7 +15,18 @@
 var webSocket;
 
 (function() {
-	//var ws = new WebSocket("ws://localhost:8888");
+	
+	$("#scriptError").remove();
+	
+	var userAgent = window.navigator.userAgent.toLowerCase();
+	var appVersion = window.navigator.appVersion.toLowerCase();
+	if (userAgent.indexOf('chrome') == -1) {  
+	     uaName = 'chrome';
+	     $("#output").text("このページはChromeで開いてね！Only Chrome");
+	     return;
+	}
+    $("#output").text("Chrome OK");
+
 	var ws = new WebSocket("wss://localhost:8888");
 	
 	var output = document.getElementById('output');
@@ -41,7 +51,6 @@ var webSocket;
 	ws.onclose = function (e) {
 		output.innerHTML += logStr('disconnect', e.code + ' - ' + e.type);
 	};
-}());
 
 	var recognition = new webkitSpeechRecognition();
 	recognition.lang = "ja-JP";
@@ -71,11 +80,11 @@ var webSocket;
 	recognition.onstart       = function() { console.log("onstart"); }
 	recognition.onerror       = function(event) { 
 	   console.log("onerror"+event); 
-	   timeoutID = window.setTimeout( function(){recognition.start();}, 2 )
+	   window.setTimeout( function(){recognition.start();}, 20 )
 	}
 	recognition.onend         = function() { 
 	   console.log("onend"); 
-	   timeoutID = window.setTimeout( function(){recognition.start();}, 2 )
+	   window.setTimeout( function(){recognition.start();}, 2 )
 	}
 	recognition.onaudiostart  = function() { console.log("onaudiostart "); }
 	recognition.onsoundstart  = function() { console.log("onsoundstart "); }
@@ -86,7 +95,8 @@ var webSocket;
 	recognition.onnomatch     = function() { console.log("onnomatch    "); }
 	
 	recognition.start();//開いた瞬間に開始しておきます
-	
+
+}());
 </script>
 </body>
 </html>

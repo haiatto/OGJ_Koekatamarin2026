@@ -1,0 +1,102 @@
+<html>
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+<div id="scriptError">Script Error ↑このメッセージが出る場合は…。アドレスバーで禁止されてるマークが出てたら許可してね！（盾のマークが出ててたりしない？）</div>
+<input id="message" type="text"><button id="send">test send</button>
+<input type="button" value="Mic Stop" onclick="recognition.stop();"/>
+<div id="recognizedText"></div>
+<div id="output"></div>
+
+<script src="http://code.jquery.com/jquery.min.js"></script>
+<script>
+
+var webSocket;
+
+(function() {
+	
+	$("#scriptError").remove();
+	
+	var userAgent = window.navigator.userAgent.toLowerCase();
+	var appVersion = window.navigator.appVersion.toLowerCase();
+	if (userAgent.indexOf('chrome') == -1) {  
+	     uaName = 'chrome';
+	     $("#output").text("このページはChromeで開いてね！Only Chrome");
+	     return;
+	}
+    $("#output").text("Chrome OK");
+
+	var ws = new WebSocket("wss://localhost:8888");
+	
+	var output = document.getElementById('output');
+	var send = document.getElementById('send');
+
+    webSocket = ws;
+
+	function logStr(eventStr, msg) {
+		return '<div>' + eventStr + ':' + msg + '</div>';
+	}
+
+	send.addEventListener('click', function() {
+		var msg = document.getElementById('message').value;
+		ws.send(msg);
+		output.innerHTML += logStr('send', msg);
+	});
+
+	ws.onmessage = function(e) {
+		//output.innerHTML += logStr('recieved', e.data);
+	};
+
+	ws.onclose = function (e) {
+		output.innerHTML += logStr('disconnect', e.code + ' - ' + e.type);
+	};
+
+	var recognition = new webkitSpeechRecognition();
+	recognition.lang = "en-us";
+	
+	//中間結果の表示オン
+	recognition.interimResults = true;
+	//連続音声認識ＯＮ（バックグラウンドで動く）
+	recognition.continuous = true;
+
+	recognition.onresult = function(event){
+	    var results = event.results;
+	    for (var i = event.resultIndex; i<results.length; i++){
+	        //認識の最終結果
+	        if(results[i].isFinal){
+	            $("#recognizedText").text(results[i][0].transcript);
+	            console.log("end");
+	        }
+	        //認識の中間結果
+	        else{
+	            $("#recognizedText").text(results[i][0].transcript);
+	            console.log("mid");
+	        }
+	        webSocket.send(results[i][0].transcript);
+	    }
+	};
+	
+	recognition.onstart       = function() { console.log("onstart"); }
+	recognition.onerror       = function(event) { 
+	   console.log("onerror"+event); 
+	   window.setTimeout( function(){recognition.start();}, 20 )
+	}
+	recognition.onend         = function() { 
+	   console.log("onend"); 
+	   window.setTimeout( function(){recognition.start();}, 2 )
+	}
+	recognition.onaudiostart  = function() { console.log("onaudiostart "); }
+	recognition.onsoundstart  = function() { console.log("onsoundstart "); }
+	recognition.onspeechstart = function() { console.log("onspeechstart"); }
+	recognition.onspeechend   = function() { console.log("onspeechend  "); }
+	recognition.onsoundend    = function() { console.log("onsoundend   "); }
+	recognition.onaudioend    = function() { console.log("onaudioend   "); }
+	recognition.onnomatch     = function() { console.log("onnomatch    "); }
+	
+	recognition.start();//開いた瞬間に開始しておきます
+
+}());
+</script>
+</body>
+</html>
