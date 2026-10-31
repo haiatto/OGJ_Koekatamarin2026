@@ -67,6 +67,8 @@ python tools/setup_speech.py
 adb install -r QuestApp/Builds/Koekatamarin2026.apk
 ```
 
+端末の選択、APK検査付きの導入、起動、診断ログ保存をまとめた `tools/quest_device.py` も利用できます。[実機導入・検証手順](device-validation.ja.md)を参照してください。
+
 ## 検証と残作業
 
 2026-11-01に音声認識、MR位置合わせと夕日のVRを含むDevelopment APK（0.4.0 / build 4）のビルドが成功しました。サイズは329,651,388 bytes（約330 MB）。`inspect_apk.ps1` で署名、ARM64のみであること、IL2CPP、Android用Meta XR・音声認識のネイティブライブラリ、マイク・LAN・パススルー・境界表示権限・VRカテゴリを検査済みです。3つのモデルファイルのハッシュとライセンスの同梱、`BOUNDARYLESS_APP` が含まれないことも確認しました。

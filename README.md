@@ -12,6 +12,8 @@
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
+[要件ごとの検証状況](docs/requirements-status.ja.md)と、Questを接続できたときの[導入・実機確認手順](docs/device-validation.ja.md)を用意しています。
+
 - Quest 3単体動作、MRを標準とします。オプションのVRでは原作素材を使った夕日・砂浜と、新しい軽量な水面を表示します。[VR復元の範囲](docs/vr-restoration.ja.md)。
 - 原作の中心は「音声認識 → 日本語の文字を塊として飛ばす」です。読み上げ（TTS）は別機能です。
 - 日本語音声認識はSenseVoice Small INT8＋Silero VADによる端末内処理です。発話の区切りで文字を発射します。[構成・ライセンス・検証範囲](docs/offline-speech.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
