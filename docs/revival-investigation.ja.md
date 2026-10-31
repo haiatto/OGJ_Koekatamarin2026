@@ -79,7 +79,7 @@ Metaの現行資料はOculus XR Pluginを非推奨とし、OpenXRを推奨して
 
 「ガードなしを標準」はアプリのMR時の要求として実現する。ユーザー全体のGuardian設定を強制無効化する機能ではない。Link上の確認だけでは不十分で、Quest単体APKで検証する。固定物の位置にはStage原点の永続性を仮定せず、必要な場合は空間アンカーを使う。
 
-同室でのMRマルチプレイには座標合わせが別途必要。通信が成立しても、各Questのローカル原点は一致しない。最初は各人のローカルな発射位置に表示する遠隔共有方式とし、同室で同じ場所の文字を見る体験は共有アンカー/コロケーション検証を追加する。
+同室でのMRマルチプレイには座標合わせが別途必要。通信が成立しても、各Questのローカル原点は一致しない。同じWi-Fi内の通信確認後、同じ場所の文字を見るための座標合わせを検証する。共有アンカー/コロケーションを使う場合も、外部サービスやインターネット接続への依存を確認する。
 
 ## 6. 日本語音声認識の候補
 
@@ -105,24 +105,17 @@ SenseVoice/ReazonSpeech候補は本来の逐次認識モデルとは区別する
 
 Supertonic 3も候補にはなるが、原作者のリポジトリは2026-09-09にアーカイブされ、サポート終了を明記している。サンプルコードはMIT、モデルはOpenRAIL-Mで異なるため、保守の第一候補にはしない。[原作者のアーカイブとライセンス説明](https://github.com/supertone-oss-archive/supertonic/blob/main/README.md)。Kokoroも「モデルに日本語音声がある」ことと「選んだランタイムが日本語前処理を実装している」ことは別であり、無条件に動作可能とは扱わない。
 
-## 7. 通信の候補と無料範囲
+## 7. 通信要件：同じWi-Fi内のP2P
 
-| 案 | 無料範囲 / 費用の性質 | 判断 |
-| --- | --- | --- |
-| Unity Netcode for GameObjects + Multiplayer Services SDK + Relay | Relayは月平均50 CCUまで。帯域はCCUあたり3 GiB、合計上限150 GiB/月。Lobby帯域も別枠 | 小規模なネット越し共有の第一候補 |
-| 同じNGO + Unity TransportでLAN直結 | Relay利用なし。サービス利用量の課金を避けやすいが、LAN設定・接続先指定が必要 | 展示・同室体験の追加モードに向く |
-| Photon Fusion | 100 CCU無料プランあり。Fusion/Quantum向け、顧客あたり1アプリ等の条件 | Photonを離れる必然はない。旧PUNからは移植が必要 |
-| Mirror | ライブラリはMIT。サーバー・中継・NAT越えは別途設計/運用 | 自前運用をしたい場合の候補 |
+ユーザーとの確認により、**同じWi-Fi内のQuest同士で直接通信するP2P**を採用方針とする。専用サーバー、クラウド中継、通信サービスの従量課金を必要としない構成を選ぶ。
 
-Unityの50 CCUは「部屋に50人」「登録ユーザー50人」「瞬間同時接続50人」という意味ではなく月平均。同時に帯域枠を見る。無料枠を超えた場合の挙動はUGS契約/課金状態に依存するため、Dashboardで確認し、無制限無料とは扱わない。
+**Unity Relayは採用候補から除外する。** 無料枠があっても、有料利用時に支出上限を保証できる方式ではないため、このプロジェクトの条件に合わない。将来追加する標準機能としても予定しない。公式にはUGSは従量課金で、予算は通知用であり自動停止しない。またRelayは予算アラートの対象外とされている。[UGSの課金方式](https://docs.unity.com/en-us/services/pricing-and-billing)、[予算アラートの制約](https://docs.unity.com/en-us/cloud/billing/budget)。
 
-根拠: [Unity公式料金](https://unity.com/products/gaming-services/pricing)、[MPSとNGO/Relayの公式手順](https://docs.unity.com/en-us/mps-sdk/tutorials/relay-and-ngo)、[Photon公式料金条件](https://doc.photonengine.com/photon/current/pricing)、[Mirror](https://github.com/MirrorNetworking/Mirror)。
+ライブラリと接続構成は未確定。NGO + Unity Transportの直接接続やMirrorのLAN機能は調査対象だが、1台のQuestがホストになる方式と、各端末が対等なP2P方式は区別して選定する。NGOを選ぶこととRelayを利用することは別であり、LAN直結にRelayは不要。[Unityの直接接続設定](https://mp-docs.dl.it.unity3d.com/netcode/current/components/networkmanager/)、[MirrorのLAN内自動発見](https://mirror-networking.gitbook.io/docs/manual/components/network-discovery)。
 
-推奨は **NGO + MPS Sessions + Relay、2〜4人のホスト方式**。新規Unity 6では旧Relay単体パッケージより統合MPS SDKを選ぶ。常時サーバーやDistributed Authorityは初期段階では不要。
+接続先の発見もLAN内で完結させ、外部Lobby/認証サービスを前提にしない。自動発見できない場合の接続先指定を用意する。同じWi-Fi名でも端末間通信が禁止されるネットワークでは接続できないため、その状態を実機で検証する。
 
-まず共有するのは `utteranceId / senderId / text / spawnPose / styleSeed / timestamp / lifetime`。文字長・頻度をホスト側で制限し、同じIDは再生成しない。手や頭の姿勢は低頻度補間、文字の飛び方が演出だけならローカル再生で帯域を節約する。文字同士の衝突結果にゲーム上の意味を持たせる場合はホストの物理結果を同期する。
-
-初期版はホスト退出で部屋終了と明示し、再接続/途中参加でTTL内イベントだけ復元する。Host migrationは追加機能として扱う。音声チャットは元の文字共有とは別で、最初からVivox等を入れる必要はない。
+共有するのは `utteranceId / senderId / text / spawnPose / styleSeed / timestamp / lifetime`。音声認識は各端末で実行し、確定した文字と演出情報を送る。受信文字長・頻度を制限し、同じIDは再生成しない。文字の飛び方が演出だけなら各端末で再生する。衝突結果を共有する場合の決定権、途中参加・切断時の扱いは接続構成と合わせて決める。
 
 ## 8. 実装順序と合格条件
 
@@ -130,7 +123,7 @@ Unityの50 CCUは「部屋に50人」「登録ユーザー50人」「瞬間同�
 2. **Quest最小基盤**: 最新安定Unity/SDKを固定し `QuestApp/` を新規作成。Passthrough、日本語フォント、コントローラー入力、文字発射、単体APKを確認。
 3. **音声比較**: 同一の日本語短文をSenseVoice/ReazonSpeech/Whisperで測定し、1種類を採用。マイク拒否・中断・復帰時も破綻しないこと。
 4. **MR標準化**: Contextual boundarylessの要求と実状態、再センタリング、スリープ復帰、非対応時の挙動を確認。
-5. **2台通信**: 入退室、文字共有、重複排除、途中参加、切断処理。サービス使用量も記録。
+5. **LAN内2台通信**: 外部通信なしで接続先発見・参加・文字共有ができること。重複排除、途中参加、切断、端末間通信が禁止されたWi-Fiも検証する。
 6. **VR復活**: 夕日/海岸の軽量なURP表現、境界復帰を伴うMR/VR切替。必要なら同室座標共有やTTSを追加。
 
 音声比較で記録する項目:
@@ -148,7 +141,7 @@ Unityの50 CCUは「部屋に50人」「登録ユーザー50人」「瞬間同�
 - 旧配布版の起動とUnityでの完全な参照検証。
 - 最新Unity/Meta SDKの具体的な固定版とQuest 3実機での動作。
 - 旧アセットごとの再配布許諾、採用モデルの配布物ごとの条件。
-- UGSアカウントの料金プラン・使用量・上限時の挙動。
-- ネット越し中心か、同室で空間を共有する遊びが中心かという最終仕様。
+- P2Pの接続構成、ライブラリ、LAN内の接続先発見方式。
+- 同室で空間を共有する場合の座標合わせと、その機能の外部サービス依存。
 
 これらを確認する前に「Quest対応済み」「リアルタイム性能達成」「無料で無制限」とは表記しない。
