@@ -1,0 +1,64 @@
+{
+  "apk": "Koekatamarin2026.apk",
+  "apkSha256": "7edda2d26e3059d2308a7b8ff054d9d895c97706f392ef5ad9450b509a2a12cb",
+  "minimumAndroidApi": 32,
+  "libraries": [
+    {
+      "name": "libsherpa-onnx-c-api.so",
+      "sha256": "0eadae93c4d595a26584d7eebde7b397b9a36d01eee3ebc7262e0d34df2fce10",
+      "architecture": "AArch64",
+      "needed": [
+        "libandroid.so",
+        "liblog.so",
+        "libonnxruntime.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "minimumLoadSegmentAlignmentBytes": 16384,
+      "requiredCSharpEntryPointsPresent": [
+        "SherpaOnnxAcceptWaveformOffline",
+        "SherpaOnnxCreateOfflineRecognizer",
+        "SherpaOnnxCreateOfflineStream",
+        "SherpaOnnxCreateVoiceActivityDetector",
+        "SherpaOnnxDecodeMultipleOfflineStreams",
+        "SherpaOnnxDecodeOfflineStream",
+        "SherpaOnnxDestroyOfflineRecognizer",
+        "SherpaOnnxDestroyOfflineRecognizerResult",
+        "SherpaOnnxDestroyOfflineStream",
+        "SherpaOnnxDestroySpeechSegment",
+        "SherpaOnnxDestroyVoiceActivityDetector",
+        "SherpaOnnxGetOfflineStreamResult",
+        "SherpaOnnxOfflineRecognizerSetConfig",
+        "SherpaOnnxOfflineStreamGetOption",
+        "SherpaOnnxOfflineStreamHasOption",
+        "SherpaOnnxOfflineStreamSetOption",
+        "SherpaOnnxVoiceActivityDetectorAcceptWaveform",
+        "SherpaOnnxVoiceActivityDetectorClear",
+        "SherpaOnnxVoiceActivityDetectorDetected",
+        "SherpaOnnxVoiceActivityDetectorEmpty",
+        "SherpaOnnxVoiceActivityDetectorFlush",
+        "SherpaOnnxVoiceActivityDetectorFront",
+        "SherpaOnnxVoiceActivityDetectorPop",
+        "SherpaOnnxVoiceActivityDetectorReset"
+      ]
+    },
+    {
+      "name": "libonnxruntime.so",
+      "sha256": "7a2fb92eb67037837c3f0e428bd732fd0d05ced0546d9e740090c07573d8249a",
+      "architecture": "AArch64",
+      "needed": [
+        "libdl.so",
+        "liblog.so",
+        "libm.so",
+        "libc.so"
+      ],
+      "minimumLoadSegmentAlignmentBytes": 16384,
+      "requiredCSharpEntryPointsPresent": [
+        "OrtGetApiBase"
+      ]
+    }
+  ],
+  "deviceExecuted": false,
+  "scope": "ELF64/AArch64 headers, DT_NEEDED names against APK and NDK public stubs, and C# entry-point export names. Does not prove native struct layout, runtime loading, model execution, or Quest performance."
+}

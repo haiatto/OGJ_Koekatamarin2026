@@ -54,6 +54,7 @@ python tools/setup_speech.py
 ./tools/unity.ps1 -Stage Tests -WithoutEditorXr
 ./tools/unity.ps1 -Stage Android -WithoutEditorXr
 ./tools/inspect_apk.ps1
+python tools/inspect_native_speech.py
 ```
 
 `Setup` は生成シーンと設定を再構成するため、手でシーンを編集した後は必要なときだけ実行します。出力先は `QuestApp/Builds/Koekatamarin2026.apk`、ログとテスト結果は `.work/` です。APKは開発用署名・Development Buildで、ストア公開用成果物ではありません。生成済みシーンは `QuestApp/Assets/Koekatamarin/Generated/Playground.unity` です。
@@ -83,6 +84,8 @@ EditModeテスト36件が成功しました。日本語の入力検証、不正�
 `PreviewIP`で数字パネルの入力・削除・通常画面への復帰を確認しました。`PreviewVR` で夕日の風景を描画し、MRへ戻したときにVR風景が消えてカメラ背景が透過へ戻ることも確認しました。Editorの境界応答は模擬であり、実機APIの検証ではありません。
 
 現在Quest 3を接続できないため、装着しての起動、パススルー、境界復帰、コントローラー、AndroidでのLAN発見・マイク、描画速度は未確認です。
+
+APK内の音声用ネイティブライブラリについて、ARM64のELFヘッダー、依存ライブラリ名、C#呼出先25関数のexportを追加検査しました。[検査記録](validation/quest-0.5.0-native-speech.json)。これは実機ロード・推論の確認を代替しません。
 
 Editorで日本語UIと文字の描画を目視確認しました。下はPC用XRプラグインを無効にした表示確認用の画像です。このプレビューではOVRManager初期化時に `DllNotFoundException` が記録されるため、XR初期化や実機動作の成功を示すものではありません。APK内にAndroid用 `libOVRPlugin.so` が存在することは別途検査しています。
 

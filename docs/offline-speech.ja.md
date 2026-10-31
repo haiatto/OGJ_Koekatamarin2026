@@ -46,6 +46,9 @@ Windows Editorでは隣接DLLを検索する明示ロードを使います。こ
 - 約5.924秒の検出発話に対する認識部分は、このPCでは約0.200秒。マイク入力、VADの発話終了待ち、Questの描画負荷を含む測定ではありません。
 - リセット後の結果破棄、無音で発射しないこと、ワーカー終了を検査。
 - APK内のARM64認識ライブラリ、3つのモデルファイルのハッシュ、ライセンスの存在を `tools/inspect_apk.ps1` で検査する。
+- `tools/inspect_native_speech.py` で、APKから取り出した2つの音声ライブラリがELF64/AArch64であり、依存ライブラリ名がAPKまたは最小API 32のNDK公開ライブラリに存在し、C#の呼出先25関数がexportされていることを確認。[0.5.0の検査結果](validation/quest-0.5.0-native-speech.json)。ネイティブコードを実行する検査ではなく、構造体の配置や実機ロード・推論成功の保証ではありません。
+
+最後の静的検査は、APK生成後に `python tools/inspect_native_speech.py` で再実行できます。対象APKのSHA-256を含む `.apk.native-speech.json` をAPKと同じフォルダーへ出力します。Unityの場所が異なる場合は `--android-player` を指定してください。
 
 Quest 3での確認項目は、日本語の短文・長文・無音・周囲の会話、音声ON/OFFの連打、許可拒否後の再操作、スリープ復帰、モデル初回展開、MRとLAN通信の同時利用です。
 
