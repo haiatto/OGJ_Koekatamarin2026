@@ -8,11 +8,11 @@
 
 ## 現在の状態
 
-**初期調査段階です。Quest対応版はまだ実装・ビルドされていません。**
+**Quest向け初期プロトタイプのAPKをビルドしました。** 新規Unityプロジェクトは `QuestApp/` です。実機未検証で、音声認識モデルはまだ入っていません。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約78 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
-- Quest 3単体動作、MRを標準、旧VR体験をオプションにする計画です。
+- Quest 3単体動作、MRを標準とします。現プロトタイプのVR切替は単色背景の動作確認用で、旧VR体験の復元は今後です。
 - 原作の中心は「音声認識 → 日本語の文字を塊として飛ばす」です。読み上げ（TTS）は別機能です。
 - 日本語音声認識は端末内推論を比較し、通信は同じWi-Fi内のQuest同士によるP2Pを前提にします。Unity Relayは採用候補から除外します。
 - NAT越えは基本的に対象外とし、インターネット越しの対戦や接続支援サービスは開発計画に含めません。
@@ -22,6 +22,8 @@
 
 | パス | 内容 |
 | --- | --- |
+| `QuestApp/` | Unity 6000.6.7f1 / Quest 3用の新規プロジェクト |
+| `docs/quest-prototype.ja.md` | プロトタイプの操作、ビルド方法、確認範囲 |
 | `New Unity Project/` | 保存した旧Unityプロジェクト。新規開発先ではありません |
 | `ReleseFolder/` | 当時のWindows/Mac配布物とサーバー |
 | `server/` | Chrome音声認識とUnityを接続していた旧Node.jsサーバー |
@@ -30,6 +32,12 @@
 | `tools/audit_legacy.py` | 標準Pythonだけで実行できる読み取り専用検査 |
 
 検査の再実行: `python tools/audit_legacy.py`。Unityでのインポート・ビルド成功を判定するものではありません。
+
+## Questプロトタイプ
+
+Unity Hubで **6000.6.7f1** とAndroid Build Support（SDK/NDK/OpenJDKを含む）を入れ、`QuestApp/` を開きます。Meta XR Core SDK 207.0.1、OpenXR 1.19.0、URP 17.6.0を使用します。
+
+同じWi-Fi・同じ部屋番号の端末間で直接UDP通信します。全端末が対等なP2Pで、Photon、Unity Relay、UGSアカウント、外部サーバー、NAT越えは使用しません。詳細は[操作・ビルド手順](docs/quest-prototype.ja.md)を参照してください。
 
 ## 原作の取り扱い
 

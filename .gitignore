@@ -222,3 +222,12 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 /New Unity Project/Library
+/.work/
+/QuestApp/Library/
+/QuestApp/Temp/
+/QuestApp/Logs/
+/QuestApp/UserSettings/
+/QuestApp/obj/
+/QuestApp/Builds/
+/QuestApp/MemoryCaptures/
+/QuestApp/Recordings/

@@ -1,0 +1,6 @@
+{
+  "name": "Koekatamarin.Tests",
+  "references": ["Koekatamarin.Runtime"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

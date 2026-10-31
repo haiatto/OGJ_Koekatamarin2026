@@ -2,6 +2,8 @@
 
 調査日: 2026-11-01（日本時間）
 
+追記: 調査後にUnity 6000.6.7f1とAndroid環境を導入し、`QuestApp/` で初期実装を開始した。現在の実装・検証状態は[Questプロトタイプ](quest-prototype.ja.md)を参照。以下の調査時点の記述と区別する。
+
 対象: `haiatto/OGJ_Koekatamarin`、コミット `c07556014bbb4a17f4973f38aac01426bd11b4ea`
 
 検証範囲: Git全履歴の取得、ソース読解、追跡ファイルとYAML GUIDの静的検査、公式資料の調査。Unityインポート、APKビルド、Quest実機性能は未検証。
