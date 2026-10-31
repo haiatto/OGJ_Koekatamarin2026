@@ -8,11 +8,11 @@
 
 ## 現在の状態
 
-**端末内の日本語音声認識を同梱したQuest向けAPK（0.2.0）をビルドしました。** 新規Unityプロジェクトは `QuestApp/` です。Quest実機は未検証です。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約329 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
+**端末内の日本語音声認識と夕日のVRモードを含むQuest向けAPK（0.3.0）をビルドしました。** 新規Unityプロジェクトは `QuestApp/` です。Quest実機は未検証です。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約330 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
-- Quest 3単体動作、MRを標準とします。現プロトタイプのVR切替は単色背景の動作確認用で、旧VR体験の復元は今後です。
+- Quest 3単体動作、MRを標準とします。オプションのVRでは原作素材を使った夕日・砂浜と、新しい軽量な水面を表示します。[VR復元の範囲](docs/vr-restoration.ja.md)。
 - 原作の中心は「音声認識 → 日本語の文字を塊として飛ばす」です。読み上げ（TTS）は別機能です。
 - 日本語音声認識はSenseVoice Small INT8＋Silero VADによる端末内処理です。発話の区切りで文字を発射します。[構成・ライセンス・検証範囲](docs/offline-speech.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
 - NAT越えは基本的に対象外とし、インターネット越しの対戦や接続支援サービスは開発計画に含めません。

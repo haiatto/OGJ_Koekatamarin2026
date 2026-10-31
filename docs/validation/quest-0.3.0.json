@@ -1,0 +1,45 @@
+{
+  "apk": "Koekatamarin2026.apk",
+  "bytes": 329646624,
+  "sha256": "cd70083b62d3d4b77c6acc2794c62ce11d3ebbfb74819e238c92238b390794e1",
+  "architecture": "arm64-v8a",
+  "scriptingBackend": "IL2CPP",
+  "signatureVerified": true,
+  "requiredManifestEntriesVerified": true,
+  "alwaysBoundaryless": false,
+  "nativeLibraries": [
+    "lib/arm64-v8a/LibRuntimeOptimizer.so",
+    "lib/arm64-v8a/libOVRMetricsTool.so",
+    "lib/arm64-v8a/libOVRPlugin.so",
+    "lib/arm64-v8a/libUnityOpenXR.so",
+    "lib/arm64-v8a/libUnityOpenXRHands.so",
+    "lib/arm64-v8a/libXrApiLayer_METAX_operator.so",
+    "lib/arm64-v8a/lib_burst_generated.so",
+    "lib/arm64-v8a/libc++_shared.so",
+    "lib/arm64-v8a/libgame.so",
+    "lib/arm64-v8a/libil2cpp.so",
+    "lib/arm64-v8a/libloaderimpl.so",
+    "lib/arm64-v8a/libmain.so",
+    "lib/arm64-v8a/libonnxruntime.so",
+    "lib/arm64-v8a/libopenxr_loader.so",
+    "lib/arm64-v8a/libsherpa-onnx-c-api.so",
+    "lib/arm64-v8a/libswappywrapper.so",
+    "lib/arm64-v8a/libunity.so"
+  ],
+  "offlineSpeechModelHashes": {
+    "model.int8.onnx": "c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51",
+    "tokens.txt": "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+    "silero_vad.onnx": "9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6"
+  },
+  "speechLicensesBundled": true,
+  "deviceTested": false,
+  "appVersion": "0.3.0",
+  "buildCode": 3,
+  "unityVersion": "6000.6.7f1",
+  "editorTests": {
+    "passed": 13,
+    "failed": 0
+  },
+  "editorVrRoundTripVerified": true,
+  "deviceBoundaryVerified": false
+}

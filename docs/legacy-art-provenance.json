@@ -1,0 +1,24 @@
+[
+  {
+    "source": "New Unity Project/Assets/Yuuhi.FBX",
+    "destination": "QuestApp/Assets/Koekatamarin/Art/Legacy/Yuuhi.FBX",
+    "sha256": "2a93bfba7ebecd32411e177ac002dd9d048c6625f94074e10ac28307a4042655",
+    "sourceCommit": "01b7a14f7dcd8ab7e76557ce0cc7e99bc59e6ee0",
+    "sourceBlobSha256": "b440e8d1c3f3ed598d090c52b4bcb8a18a33f17167af92563d54e6647a862ccd",
+    "checkoutNormalization": "Original Git blob uses LF; the Windows checkout copy uses CRLF. No other changes."
+  },
+  {
+    "source": "New Unity Project/Assets/Yuuyake.tga",
+    "destination": "QuestApp/Assets/Koekatamarin/Art/Legacy/Yuuyake.tga",
+    "sha256": "35c1ab3c2731037c335319d915287aa34e887f4116f2108d3ec4beb6c7e0ed86",
+    "sourceCommit": "01b7a14f7dcd8ab7e76557ce0cc7e99bc59e6ee0",
+    "sourceBlobSha256": "35c1ab3c2731037c335319d915287aa34e887f4116f2108d3ec4beb6c7e0ed86"
+  },
+  {
+    "source": "New Unity Project/Assets/Game/Texture/Sand_Pattern.jpg",
+    "destination": "QuestApp/Assets/Koekatamarin/Art/Legacy/Sand_Pattern.jpg",
+    "sha256": "f06dc7b7381d6961dc43948d46a3f4ee22583620900eab2b53a399c6655405ae",
+    "sourceCommit": "c8f7b3292cf81acc1728f2e41313f80f89fe3ee7",
+    "sourceBlobSha256": "f06dc7b7381d6961dc43948d46a3f4ee22583620900eab2b53a399c6655405ae"
+  }
+]

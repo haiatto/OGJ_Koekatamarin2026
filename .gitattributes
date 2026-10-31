@@ -20,3 +20,6 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Preserve the copied original FBX byte-for-byte, including its legacy encoding.
+QuestApp/Assets/Koekatamarin/Art/Legacy/Yuuhi.FBX binary

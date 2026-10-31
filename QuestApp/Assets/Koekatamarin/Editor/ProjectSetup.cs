@@ -43,8 +43,8 @@ namespace Koekatamarin.Editor
             PlayerSettings.companyName = "haiatto";
             PlayerSettings.productName = "Koekatamarin 2026";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.haiatto.koekatamarin2026");
-            PlayerSettings.bundleVersion = "0.2.0";
-            PlayerSettings.Android.bundleVersionCode = 2;
+            PlayerSettings.bundleVersion = "0.3.0";
+            PlayerSettings.Android.bundleVersionCode = 3;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel32;
@@ -94,6 +94,7 @@ namespace Koekatamarin.Editor
             rigObject.AddComponent<OVRPassthroughLayer>(); // Underlay by default.
             var app = new GameObject("Koekatamarin").AddComponent<Experience>();
             app.rig = rig; app.font = font; app.panelMaterial = panel; app.beamMaterial = beam;
+            app.environment = LegacyEnvironmentSetup.Create();
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();

@@ -11,6 +11,9 @@ namespace Koekatamarin
         public TMP_FontAsset font;
         public Material panelMaterial;
         public Material beamMaterial;
+        public LegacyEnvironment environment;
+        public bool IsMixedReality => mr;
+        public bool IsSwitching => switching;
         readonly string[] samples = { "こんにちは！", "声が文字になる", "コエカタマリン", "おはよう", "ありがとう", "わあああ！" };
         readonly Color[] colors = { new Color(.25f, 1, .85f), new Color(1, .65f, .3f),
             new Color(.6f, .75f, 1), new Color(1, .55f, .75f), Color.white, new Color(1, .9f, .3f) };
@@ -31,7 +34,7 @@ namespace Koekatamarin
         int projectileIndex;
         float nextShot;
         float nextStatus;
-        string feedback = "右トリガーで発射 / パネルを指して操作";
+        string feedback = "右トリガーで発射 / Aでパネル表示切替";
         Camera View => rig.centerEyeAnchor.GetComponent<Camera>();
 
         IEnumerator Start()
@@ -46,6 +49,7 @@ namespace Koekatamarin
             manager.isInsightPassthroughEnabled = true;
             passthrough.enabled = true;
             ConfigureCamera(true);
+            if (environment != null) environment.Hide();
             for (int i = 0; i < pool.Length; i++)
             {
                 pool[i] = new GameObject("Word " + i).AddComponent<WordProjectile>();
@@ -74,7 +78,7 @@ namespace Koekatamarin
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = isMr ? new Color(0, 0, 0, 0) : new Color(.055f, .08f, .16f, 1);
                 camera.nearClipPlane = .05f;
-                camera.farClipPlane = 50f;
+                camera.farClipPlane = isMr ? 50f : 250f;
             }
         }
 
@@ -110,7 +114,7 @@ namespace Koekatamarin
             panel = new GameObject("Control panel").transform;
             panel.SetParent(transform);
             Label(panel, "コエカタマリン 2026", new Vector3(0, .33f, 0), .65f, new Vector2(1.2f, .12f));
-            Label(panel, "LAN P2P プロトタイプ", new Vector3(0, .24f, 0), .32f, new Vector2(1.2f, .1f));
+            Label(panel, "声を文字にして飛ばそう", new Vector3(0, .24f, 0), .32f, new Vector2(1.2f, .1f));
             roomLabel = Button("部屋 1 →", new Vector3(-.18f, .10f, 0), () =>
             {
                 network.Disconnect(); room = room % 9 + 1; roomLabel.text = "部屋 " + room + " →";
@@ -119,8 +123,7 @@ namespace Koekatamarin
             { if (network.Connected) network.Disconnect(); else network.Connect(room); });
             Button("サンプル発射", new Vector3(-.18f, -.03f, 0), ShootSample);
             Button("音声 ON / OFF", new Vector3(.18f, -.03f, 0), () => speech.Toggle());
-            modeLabel = Button("MR / VR", new Vector3(-.18f, -.16f, 0), () =>
-            { if (!switching) StartCoroutine(SwitchMode()); });
+            modeLabel = Button("MR / VR", new Vector3(-.18f, -.16f, 0), ToggleMode);
             Button("次のことば", new Vector3(.18f, -.16f, 0), () => { sampleIndex = (sampleIndex + 1) % samples.Length; });
             status = Label(panel, "準備中", new Vector3(0, -.38f, -.02f), .30f, new Vector2(1.4f, .3f));
             status.textWrappingMode = TextWrappingModes.Normal;
@@ -128,16 +131,26 @@ namespace Koekatamarin
 
         void PlacePanel()
         {
+            SetPanelVisible(true);
             var head = rig.centerEyeAnchor;
             var yaw = Quaternion.Euler(0, head.eulerAngles.y, 0);
             panel.SetPositionAndRotation(head.position + yaw * new Vector3(0, -.05f, 1.35f), yaw);
         }
+
+        public void SetPanelVisible(bool visible)
+        {
+            if (panel != null) panel.gameObject.SetActive(visible);
+            if (beam != null) beam.enabled = visible;
+        }
+
+        public void ToggleMode() { if (!switching) StartCoroutine(SwitchMode()); }
 
         IEnumerator SwitchMode()
         {
             switching = true;
             if (mr)
             {
+                if (environment == null) { feedback = "夕日の風景が見つかりません"; switching = false; yield break; }
                 manager.shouldBoundaryVisibilityBeSuppressed = false;
                 // Explicitly ask the OS and require a positive state, not a default false field.
                 float until = Time.realtimeSinceStartup + 5f;
@@ -157,7 +170,8 @@ namespace Koekatamarin
                     passthrough.enabled = false;
                     manager.isInsightPassthroughEnabled = false;
                     ConfigureCamera(false);
-                    feedback = "VR背景テスト（旧夕日シーンは未移植）";
+                    environment.Show(rig.centerEyeAnchor);
+                    feedback = "夕日のVR / 声を海へ飛ばそう";
                 }
                 else feedback = "境界復帰を確認できないためMRを継続";
             }
@@ -166,6 +180,7 @@ namespace Koekatamarin
                 manager.isInsightPassthroughEnabled = true;
                 passthrough.enabled = true;
                 ConfigureCamera(true);
+                if (environment != null) environment.Hide();
                 mr = true;
                 float until = Time.realtimeSinceStartup + 10;
                 while (!OVRManager.IsInsightPassthroughInitialized() && Time.realtimeSinceStartup < until) yield return null;
@@ -192,9 +207,11 @@ namespace Koekatamarin
                     if (Keyboard.current.spaceKey.wasPressedThisFrame) ShootSample();
                     if (Keyboard.current.nKey.wasPressedThisFrame) { if (network.Connected) network.Disconnect(); else network.Connect(room); }
                     if (Keyboard.current.rKey.wasPressedThisFrame) PlacePanel();
+                    if (Keyboard.current.tabKey.wasPressedThisFrame) SetPanelVisible(!panel.gameObject.activeSelf);
                 }
             }
             if (OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.RTouch)) PlacePanel();
+            if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch)) SetPanelVisible(!panel.gameObject.activeSelf);
             bool hit = Physics.Raycast(ray, out var result, 5);
             beam.SetPosition(0, ray.origin);
             beam.SetPosition(1, hit ? result.point : ray.GetPoint(3));
@@ -231,7 +248,8 @@ namespace Koekatamarin
             var yaw = Quaternion.Euler(0, head.eulerAngles.y, 0);
             Vector3 offset = new Vector3(remote ? -.45f : .45f, -.1f, .6f);
             var projectile = pool[projectileIndex++ % pool.Length];
-            projectile.Launch(text, new Pose(head.position + yaw * offset, yaw), colors[style]);
+            projectile.Launch(text, new Pose(head.position + yaw * offset, yaw), colors[style],
+                !mr, environment != null ? environment.FloorY : head.position.y - 1.65f);
         }
         void OnApplicationPause(bool paused)
         {
