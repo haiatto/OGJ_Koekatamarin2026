@@ -18,7 +18,9 @@ namespace Koekatamarin
         {
             public IPEndPoint endpoint;
             public float lastSeen;
-            public float nextShot;
+            public bool aligned;
+            public float tokens = 4;
+            public float refillAt;
         }
         sealed class Pending
         {
@@ -42,9 +44,14 @@ namespace Koekatamarin
         float nextSend;
         public bool Connected => socket != null;
         public int PeerCount => peers.Count;
+        public bool SharedSpaceReady { get; set; }
+        public int AlignedPeerCount
+        {
+            get { int count = 0; foreach (var peer in peers.Values) if (peer.aligned) count++; return count; }
+        }
         public int MissedDeliveries { get; private set; }
         public string Status { get; private set; } = "LAN未接続";
-        public event Action<string, int> Received;
+        public event Action<LanPacket> Received;
 
         public void Connect(int roomNumber)
         {
@@ -55,6 +62,7 @@ namespace Koekatamarin
             recent = new RecentEvents();
             MissedDeliveries = 0;
             nextHello = 0;
+            nextSend = 0;
             try
             {
                 socket = new UdpClient(AddressFamily.InterNetwork);
@@ -78,13 +86,14 @@ namespace Koekatamarin
             Status = "LAN未接続";
         }
 
-        public bool SendShot(string text, int style)
+        public bool SendShot(string text, int style, int space = 0, Vector3 position = default, float yaw = 0)
         {
             if (socket == null || Time.unscaledTime < nextSend || peers.Count == 0) return false;
             var packet = Packet("shot");
             packet.id = Guid.NewGuid().ToString("N");
             packet.text = LanProtocol.Clean(text);
             packet.style = style;
+            packet.space = space; packet.position = position; packet.yaw = yaw;
             if (!LanProtocol.Valid(packet, room, "")) return false;
             nextSend = Time.unscaledTime + .2f;
             byte[] bytes = Encode(packet);
@@ -98,7 +107,8 @@ namespace Koekatamarin
             return true;
         }
 
-        LanPacket Packet(string kind) => new LanPacket { room = room, peer = self, kind = kind };
+        LanPacket Packet(string kind) => new LanPacket { room = room, peer = self, kind = kind,
+            space = kind == "hello" && SharedSpaceReady ? 1 : 0 };
         static byte[] Encode(LanPacket p) => Encoding.UTF8.GetBytes(JsonUtility.ToJson(p));
         void Send(byte[] data, IPEndPoint endpoint)
         {
@@ -136,12 +146,12 @@ namespace Koekatamarin
                     if (!peers.TryGetValue(packet.peer, out var found))
                     {
                         if (peers.Count >= MaxPeers) continue;
-                        found = new Peer { endpoint = endpoint };
+                        found = new Peer { endpoint = endpoint, refillAt = now };
                         peers.Add(packet.peer, found);
                         Send(Encode(Packet("hello")), endpoint);
                     }
                     // A peer cannot be moved to another address by an event packet.
-                    if (found.endpoint.Equals(endpoint)) found.lastSeen = now;
+                    if (found.endpoint.Equals(endpoint)) { found.lastSeen = now; found.aligned = packet.space == 1; }
                     continue;
                 }
                 if (!peers.TryGetValue(packet.peer, out var sender) || !sender.endpoint.Equals(endpoint)) continue;
@@ -152,10 +162,15 @@ namespace Koekatamarin
                 }
                 var ack = Packet("ack");
                 ack.id = packet.id;
+                if (recent.Contains(packet.peer, packet.id)) { Send(Encode(ack), endpoint); continue; }
+                sender.tokens = Mathf.Min(4, sender.tokens + Mathf.Max(0, now - sender.refillAt) * 5);
+                sender.refillAt = now;
+                // Accept a small delayed burst. Over-budget new events are NOT acknowledged so retries can succeed.
+                if (sender.tokens < 1) continue;
+                sender.tokens--;
+                recent.Accept(packet.peer, packet.id);
                 Send(Encode(ack), endpoint);
-                if (!recent.Accept(packet.peer, packet.id) || now < sender.nextShot) continue;
-                sender.nextShot = now + .1f;
-                Received?.Invoke(packet.text, packet.style);
+                Received?.Invoke(packet);
             }
             expired.Clear();
             foreach (var peer in peers) if (now - peer.Value.lastSeen > PeerTimeout) expired.Add(peer.Key);

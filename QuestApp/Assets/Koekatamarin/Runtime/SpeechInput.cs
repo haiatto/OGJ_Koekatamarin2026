@@ -14,6 +14,7 @@ namespace Koekatamarin
     public sealed class SpeechInput : MonoBehaviour
     {
         public event Action<string> FinalTranscript;
+        public event Action Stopped;
         AudioClip clip;
         LocalSpeechRecognizer recognizer;
         SpeechResampler resampler;
@@ -166,6 +167,7 @@ namespace Koekatamarin
             recognizer?.Reset();
             lastText = ""; Level = 0;
             Status = "音声入力 停止";
+            Stopped?.Invoke();
         }
 
         void OnApplicationPause(bool pause) { if (pause) Stop(); }

@@ -11,10 +11,13 @@ namespace Koekatamarin
         float gravity;
         float floorY;
         bool classic;
+        Transform viewer;
         public bool Alive => remaining > 0;
+        public void Retire() { remaining = 0; gameObject.SetActive(false); }
 
-        public void Initialize(TMP_FontAsset font)
+        public void Initialize(TMP_FontAsset font, Transform viewer = null)
         {
+            this.viewer = viewer;
             label = gameObject.AddComponent<TextMeshPro>();
             label.font = font;
             label.fontSize = 2.2f;
@@ -54,6 +57,13 @@ namespace Koekatamarin
             var color = label.color;
             color.a = Mathf.Clamp01(remaining);
             label.color = color;
+        }
+
+        void LateUpdate()
+        {
+            if (viewer == null) return;
+            Vector3 direction = transform.position - viewer.position;
+            if (direction.sqrMagnitude > .0001f) transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
         }
     }
 }

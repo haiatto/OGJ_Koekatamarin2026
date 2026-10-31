@@ -8,13 +8,16 @@ namespace Koekatamarin
     public sealed class LanPacket
     {
         public string app = "koekatamarin";
-        public int version = 1;
+        public int version = 2;
         public int room;
         public string peer;
         public string kind;
         public string id;
         public string text;
         public int style;
+        public int space; // 0: personal display, 1: manually aligned MR space
+        public Vector3 position;
+        public float yaw;
     }
 
     // Plain text is data, never TMP rich text. Each sender owns its utterance IDs.
@@ -25,8 +28,11 @@ namespace Koekatamarin
 
         public static bool Valid(LanPacket p, int room, string self)
         {
-            if (p == null || p.app != "koekatamarin" || p.version != 1 || p.room != room ||
+            if (p == null || p.app != "koekatamarin" || p.version != 2 || p.room != room ||
                 p.peer == self || !Guid.TryParseExact(p.peer, "N", out _)) return false;
+            if (p.space < 0 || p.space > 1 || !SharedSpace.Finite(p.position) || !SharedSpace.Finite(p.yaw) ||
+                Mathf.Abs(p.position.x) > 50 || Mathf.Abs(p.position.y) > 50 || Mathf.Abs(p.position.z) > 50 ||
+                Mathf.Abs(p.yaw) > 180) return false;
             if (p.kind == "hello") return true;
             if (p.kind != "shot" && p.kind != "ack") return false;
             if (!Guid.TryParseExact(p.id, "N", out _)) return false;
@@ -63,6 +69,7 @@ namespace Koekatamarin
         readonly Queue<string> order = new Queue<string>();
         readonly int capacity;
         public RecentEvents(int capacity = 1024) { this.capacity = Math.Max(1, capacity); }
+        public bool Contains(string peer, string id) => seen.Contains(peer + ":" + id);
         public bool Accept(string peer, string id)
         {
             var key = peer + ":" + id;

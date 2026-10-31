@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,15 +19,21 @@ namespace Koekatamarin
         readonly Color[] colors = { new Color(.25f, 1, .85f), new Color(1, .65f, .3f),
             new Color(.6f, .75f, 1), new Color(1, .55f, .75f), Color.white, new Color(1, .9f, .3f) };
         readonly WordProjectile[] pool = new WordProjectile[64];
+        readonly Queue<string> voiceShots = new Queue<string>();
+        readonly SharedSpace sharedSpace = new SharedSpace();
         LanPeer network;
         SpeechInput speech;
         OVRManager manager;
         OVRPassthroughLayer passthrough;
+        OVRDisplay display;
         Transform panel;
         TextMeshPro status;
         TextMeshPro roomLabel;
         TextMeshPro modeLabel;
+        TextMeshPro alignmentLabel;
         LineRenderer beam;
+        Transform originMarker;
+        LineRenderer directionMarker;
         bool mr = true;
         bool switching;
         int room = 1;
@@ -43,8 +50,12 @@ namespace Koekatamarin
             network = gameObject.AddComponent<LanPeer>();
             speech = gameObject.AddComponent<SpeechInput>();
             speech.FinalTranscript += SubmitFinalTranscript;
+            speech.Stopped += ClearVoiceQueue;
             network.Received += Receive;
             manager = rig.GetComponent<OVRManager>();
+            display = OVRManager.display;
+            if (display != null) display.RecenteredPose += InvalidateAlignment;
+            OVRManager.TrackingLost += InvalidateAlignment;
             passthrough = rig.GetComponent<OVRPassthroughLayer>();
             manager.isInsightPassthroughEnabled = true;
             passthrough.enabled = true;
@@ -54,7 +65,7 @@ namespace Koekatamarin
             {
                 pool[i] = new GameObject("Word " + i).AddComponent<WordProjectile>();
                 pool[i].transform.SetParent(transform);
-                pool[i].Initialize(font);
+                pool[i].Initialize(font, rig.centerEyeAnchor);
             }
             BuildPanel();
             beam = new GameObject("Pointer").AddComponent<LineRenderer>();
@@ -63,6 +74,7 @@ namespace Koekatamarin
             beam.positionCount = 2;
             beam.startWidth = .003f;
             beam.endWidth = .001f;
+            CreateAlignmentMarkers();
             yield return null;
             PlacePanel();
             // Passthrough initialization is asynchronous; suppression is requested only once it is active.
@@ -117,7 +129,7 @@ namespace Koekatamarin
             Label(panel, "声を文字にして飛ばそう", new Vector3(0, .24f, 0), .32f, new Vector2(1.2f, .1f));
             roomLabel = Button("部屋 1 →", new Vector3(-.18f, .10f, 0), () =>
             {
-                network.Disconnect(); room = room % 9 + 1; roomLabel.text = "部屋 " + room + " →";
+                network.Disconnect(); InvalidateAlignment(); room = room % 9 + 1; roomLabel.text = "部屋 " + room + " →";
             });
             Button("接続 / 切断", new Vector3(.18f, .10f, 0), () =>
             { if (network.Connected) network.Disconnect(); else network.Connect(room); });
@@ -125,7 +137,9 @@ namespace Koekatamarin
             Button("音声 ON / OFF", new Vector3(.18f, -.03f, 0), () => speech.Toggle());
             modeLabel = Button("MR / VR", new Vector3(-.18f, -.16f, 0), ToggleMode);
             Button("次のことば", new Vector3(.18f, -.16f, 0), () => { sampleIndex = (sampleIndex + 1) % samples.Length; });
-            status = Label(panel, "準備中", new Vector3(0, -.38f, -.02f), .30f, new Vector2(1.4f, .3f));
+            alignmentLabel = Button("位置合わせ", new Vector3(-.18f, -.29f, 0), BeginAlignment);
+            Button("位置を解除", new Vector3(.18f, -.29f, 0), InvalidateAlignment);
+            status = Label(panel, "準備中", new Vector3(0, -.56f, -.02f), .28f, new Vector2(1.4f, .4f));
             status.textWrappingMode = TextWrappingModes.Normal;
         }
 
@@ -144,6 +158,66 @@ namespace Koekatamarin
         }
 
         public void ToggleMode() { if (!switching) StartCoroutine(SwitchMode()); }
+
+        void CreateAlignmentMarkers()
+        {
+            var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            marker.name = "Shared origin A";
+            Destroy(marker.GetComponent<Collider>());
+            marker.GetComponent<Renderer>().sharedMaterial = beamMaterial;
+            originMarker = marker.transform;
+            originMarker.SetParent(transform);
+            originMarker.localScale = Vector3.one * .04f;
+            marker.SetActive(false);
+            directionMarker = new GameObject("Shared forward A to B").AddComponent<LineRenderer>();
+            directionMarker.transform.SetParent(transform);
+            directionMarker.sharedMaterial = beamMaterial;
+            directionMarker.positionCount = 2;
+            directionMarker.startWidth = .01f; directionMarker.endWidth = .004f;
+            directionMarker.enabled = false;
+        }
+
+        void BeginAlignment()
+        {
+            if (!mr || switching) { feedback = "位置合わせはMRモードで行います"; return; }
+            InvalidateAlignment();
+            sharedSpace.Begin();
+            feedback = "全員共通の目印Aに右コントローラーを置き右グリップ";
+        }
+
+        void CaptureAlignment()
+        {
+            if (!sharedSpace.Capturing || !mr || switching) return;
+            if (!OVRInput.GetControllerPositionTracked(OVRInput.Controller.RTouch))
+            { feedback = "右コントローラーの位置が追跡できません"; return; }
+            sharedSpace.Capture(rig.rightHandAnchor.position, out feedback);
+            network.SharedSpaceReady = sharedSpace.Ready;
+        }
+
+        void InvalidateAlignment()
+        {
+            sharedSpace.Clear();
+            if (network != null) network.SharedSpaceReady = false;
+            ClearVoiceQueue();
+            foreach (var word in pool) if (word != null) word.Retire();
+            if (originMarker != null) originMarker.gameObject.SetActive(false);
+            if (directionMarker != null) directionMarker.enabled = false;
+            feedback = "位置合わせを解除 / 未設定の相手は手前に表示";
+        }
+
+        void UpdateAlignmentMarkers()
+        {
+            bool visible = mr && (sharedSpace.Current == SharedSpace.Step.Direction || sharedSpace.Ready) &&
+                (panel.gameObject.activeSelf || sharedSpace.Capturing);
+            originMarker.gameObject.SetActive(visible);
+            originMarker.position = sharedSpace.Origin;
+            directionMarker.enabled = visible && sharedSpace.Ready;
+            if (directionMarker.enabled)
+            {
+                directionMarker.SetPosition(0, sharedSpace.Origin);
+                directionMarker.SetPosition(1, sharedSpace.Origin + sharedSpace.Rotation * Vector3.forward * .5f);
+            }
+        }
 
         IEnumerator SwitchMode()
         {
@@ -166,6 +240,7 @@ namespace Koekatamarin
 #endif
                 if (confirmed)
                 {
+                    InvalidateAlignment();
                     mr = false;
                     passthrough.enabled = false;
                     manager.isInsightPassthroughEnabled = false;
@@ -212,6 +287,8 @@ namespace Koekatamarin
             }
             if (OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.RTouch)) PlacePanel();
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch)) SetPanelVisible(!panel.gameObject.activeSelf);
+            if (OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger, OVRInput.Controller.RTouch)) CaptureAlignment();
+            UpdateAlignmentMarkers();
             bool hit = Physics.Raycast(ray, out var result, 5);
             beam.SetPosition(0, ray.origin);
             beam.SetPosition(1, hit ? result.point : ray.GetPoint(3));
@@ -220,39 +297,64 @@ namespace Koekatamarin
                 if (hit && result.collider.TryGetComponent<PanelAction>(out var action)) action.Invoke();
                 else ShootSample();
             }
+            if (voiceShots.Count > 0 && Time.unscaledTime >= nextShot) Emit(voiceShots.Dequeue());
             if (Time.unscaledTime >= nextStatus)
             {
                 nextStatus = Time.unscaledTime + .2f;
                 status.text = samples[sampleIndex] + "\n" +
                     (network.Connected ? "部屋 " + room + " / 相手 " + network.PeerCount + "台 / 未達 " + network.MissedDeliveries : network.Status) +
-                    "\n" + speech.Status + "  " + speech.Level.ToString("F3") + "\n" + feedback;
+                    "\n" + speech.Status + "  " + speech.Level.ToString("F3") +
+                    "\n" + (sharedSpace.Ready ? "位置合わせ済 / 相手 " + network.AlignedPeerCount + "台" : "相手の文字は手前に表示") + "\n" + feedback;
                 modeLabel.text = switching ? "切替中" : (mr ? "MR → VR" : "VR → MR");
+                alignmentLabel.text = sharedSpace.Capturing ? "やり直す" : sharedSpace.Ready ? "位置合わせ済" : "位置合わせ";
             }
         }
 
         public void SubmitFinalTranscript(string text)
         {
             text = LanProtocol.Clean(text);
-            if (text.Length == 0 || Time.unscaledTime < nextShot) return;
-            nextShot = Time.unscaledTime + .25f;
-            int style = sampleIndex % colors.Length;
-            Spawn(text, style, false);
-            if (network.Connected) network.SendShot(text, style);
+            if (text.Length == 0) return;
+            if (voiceShots.Count == 8) { voiceShots.Dequeue(); feedback = "処理待ちが多いため古い発話を省略しました"; }
+            voiceShots.Enqueue(text);
         }
-        void ShootSample() { SubmitFinalTranscript(samples[sampleIndex]); }
-        void Receive(string text, int style) { Spawn(text, style, true); }
-        void Spawn(string text, int style, bool remote)
+        void ClearVoiceQueue() { voiceShots.Clear(); }
+        void Emit(string text)
+        {
+            nextShot = Time.unscaledTime + .3f;
+            int style = sampleIndex % colors.Length;
+            Pose pose = PersonalPose(false);
+            Spawn(text, style, pose);
+            if (!network.Connected) return;
+            bool aligned = mr && sharedSpace.Ready;
+            var shared = aligned ? sharedSpace.ToShared(pose) : new Pose(Vector3.zero, Quaternion.identity);
+            if (!network.SendShot(text, style, aligned ? 1 : 0, shared.position, Mathf.DeltaAngle(0, shared.rotation.eulerAngles.y)) && network.PeerCount > 0)
+                feedback = "文字をLANへ送信できませんでした";
+        }
+        void ShootSample()
+        { if (voiceShots.Count == 0 && Time.unscaledTime >= nextShot) Emit(samples[sampleIndex]); }
+        void Receive(LanPacket packet)
+        {
+            Pose pose = mr && sharedSpace.Ready && packet.space == 1
+                ? sharedSpace.ToWorld(packet.position, packet.yaw) : PersonalPose(true);
+            Spawn(packet.text, packet.style, pose);
+        }
+        Pose PersonalPose(bool remote)
         {
             var head = rig.centerEyeAnchor;
-            // Remote words appear in the receiver's local view. Spatial alignment is not claimed.
             var yaw = Quaternion.Euler(0, head.eulerAngles.y, 0);
             Vector3 offset = new Vector3(remote ? -.45f : .45f, -.1f, .6f);
+            return new Pose(head.position + yaw * offset, yaw);
+        }
+        void Spawn(string text, int style, Pose pose)
+        {
+            var head = rig.centerEyeAnchor;
             var projectile = pool[projectileIndex++ % pool.Length];
-            projectile.Launch(text, new Pose(head.position + yaw * offset, yaw), colors[style],
+            projectile.Launch(text, pose, colors[style],
                 !mr, environment != null ? environment.FloorY : head.position.y - 1.65f);
         }
         void OnApplicationPause(bool paused)
         {
+            if (paused) InvalidateAlignment();
             if (!paused && manager != null && mr)
             {
                 manager.isInsightPassthroughEnabled = true;
@@ -263,7 +365,9 @@ namespace Koekatamarin
         }
         void OnDestroy()
         {
-            if (speech != null) speech.FinalTranscript -= SubmitFinalTranscript;
+            if (speech != null) { speech.FinalTranscript -= SubmitFinalTranscript; speech.Stopped -= ClearVoiceQueue; }
+            if (display != null) display.RecenteredPose -= InvalidateAlignment;
+            OVRManager.TrackingLost -= InvalidateAlignment;
             if (network != null) network.Received -= Receive;
             if (manager != null) manager.shouldBoundaryVisibilityBeSuppressed = false;
         }

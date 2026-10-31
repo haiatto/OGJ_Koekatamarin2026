@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Koekatamarin.Tests
 {
@@ -50,6 +51,22 @@ namespace Koekatamarin.Tests
         {
             string value = new string('あ', 79) + "😀";
             Assert.That(LanProtocol.Clean(value), Is.EqualTo(new string('あ', 79)));
+        }
+
+        [Test] public void SpatialPacketsRejectNonFiniteOutOfRangeAndUnknownSpaces()
+        {
+            var p = Shot(); p.space = 1; p.position = new Vector3(1, 2, -3); p.yaw = -90;
+            Assert.That(LanProtocol.Valid(p, 3, ""), Is.True);
+            foreach (float value in new[] { float.NaN, float.PositiveInfinity, -51f, 51f })
+            {
+                p.position = new Vector3(value, 0, 0);
+                Assert.That(LanProtocol.Valid(p, 3, ""), Is.False);
+            }
+            p.position = Vector3.zero;
+            p.yaw = float.NaN; Assert.That(LanProtocol.Valid(p, 3, ""), Is.False);
+            p.yaw = 181; Assert.That(LanProtocol.Valid(p, 3, ""), Is.False);
+            p.yaw = 0; p.space = 2; Assert.That(LanProtocol.Valid(p, 3, ""), Is.False);
+            p.space = 0; p.version = 1; Assert.That(LanProtocol.Valid(p, 3, ""), Is.False);
         }
     }
 }
