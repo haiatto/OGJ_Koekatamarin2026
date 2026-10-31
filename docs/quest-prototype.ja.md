@@ -9,8 +9,8 @@
 - MRを標準にし、パススルー初期化を確認した後にMetaの境界表示抑制APIを要求します。OSの応答や設定によって抑制されない場合があります。
 - VRに切り替える前に境界表示の復帰をOSから確認します。確認できない場合はMRを続けます。常時境界なしを宣言する `BOUNDARYLESS_APP` は使いません。
 - 日本語テキストを飛ばすプール式表示。Noto Sans CJK JPを同梱し、リッチテキストは無効です。
-- マイク権限要求と音量表示。録音ファイル保存・音声のネット送信は行いません。
-- 端末内日本語音声認識は未搭載です。今はサンプル文で表示・通信を検証できます。
+- マイク権限要求、音量表示、端末内日本語音声認識。録音ファイル保存・音声のネット送信は行いません。
+- SenseVoice Small INT8＋Silero VADで、発話の区切りに文字を発射します。モデルはAPK内に同梱します。[音声機能の詳細](offline-speech.ja.md)。
 - VR背景は単色の確認用です。原作の夕日、水面、キャラクターは未移植です。
 
 `6000.6.7f1` はUnity **6.6のパッチ7**です。Unity 6.7ではありません。2026-10-28の[Unity公式記事](https://unity.com/ja/blog/xreal-aura-games-made-with-unity)はAndroid XR向けに6.6を推奨し、6.7 LTSの正式リリース後の移行を案内しています。Quest向けには別途[Meta公式のUnity要件](https://developers.meta.com/vr/documentation/unity/unity-development-requirements/)も確認しています。
@@ -33,7 +33,7 @@ AndroidではLAN接続中のみWi-Fiの受信ロックを取得し、切断時�
 2. 右コントローラーのポインターをボタンに合わせ、トリガーで選択します。
 3. 「次のことば」でサンプルを選び、「サンプル発射」で文字を飛ばします。ボタン以外に向けたトリガーでも発射できます。
 4. 複数端末では同じWi-Fiに接続し、同じ部屋番号で各端末の「接続 / 切断」を押します。
-5. 「マイク確認」を押し、権限を許可すると音量値を表示します。発話の文字起こしはまだ行いません。
+5. 「音声 ON / OFF」を押し、権限を許可します。モデル準備後に日本語で話すと、発話の区切りで文字を発射します。再度押すと停止します。初回はAPKからモデルを展開するため待ち時間があります。
 6. Bボタンで操作パネルを正面に移動します。「MR → VR」で背景を切り替えます。
 
 Unity EditorでのプレビューはSpaceで発射、Nで接続切替、Rでパネルを正面へ移動、マウスでボタン選択です。Editorの表示確認はQuest実機のMR・境界API確認を代替しません。
@@ -43,6 +43,7 @@ Unity EditorでのプレビューはSpaceで発射、Nで接続切替、Rでパ�
 WindowsのPowerShellでリポジトリルートから実行します。既定のUnityインストール先と異なる場合は各コマンドに `-Editor '絶対パス/Unity.exe'` を指定します。
 
 ```powershell
+python tools/setup_speech.py
 ./tools/unity.ps1 -Stage Import
 ./tools/unity.ps1 -Stage TextResources -WithoutEditorXr
 ./tools/unity.ps1 -Stage Setup -WithoutEditorXr
@@ -67,11 +68,11 @@ adb install -r QuestApp/Builds/Koekatamarin2026.apk
 
 ## 検証と残作業
 
-2026-11-01にDevelopment APKのビルドが成功しました。サイズは77,831,148 bytes（約78 MB / 74.23 MiB）。`inspect_apk.ps1` で署名、ARM64のみであること、IL2CPP、Android用Meta XRネイティブライブラリ、マイク・LAN・パススルー・境界表示権限・VRカテゴリを検査済みです。`BOUNDARYLESS_APP` が含まれないことも確認しました。
+2026-11-01に音声認識モデル同梱のDevelopment APK（0.2.0 / build 2）のビルドが成功しました。サイズは329,008,042 bytes（約329 MB）。`inspect_apk.ps1` で署名、ARM64のみであること、IL2CPP、Android用Meta XR・音声認識のネイティブライブラリ、マイク・LAN・パススルー・境界表示権限・VRカテゴリを検査済みです。3つのモデルファイルのハッシュとライセンスの同梱、`BOUNDARYLESS_APP` が含まれないことも確認しました。
 
-SHA-256: `fd39286055eb7c1afd8101cf7ec313ce9eb420c1790f946200e0843d74cc33f8`
+SHA-256: `0cb5da86d42b1bbaacccffbb635ca17fe97d01ba98fab4f13c5255d4b3973e50`
 
-EditModeテスト7件が成功しました。日本語の入力検証、不正な文字列・バージョン・部屋の拒否、イベントの重複排除、UTF-16の切り詰め、実UDPソケットによる相手発見・受信・ACK・重複発射の防止を確認しています。これはWindows上のソケット試験であり、Quest間の通信確認ではありません。
+EditModeテスト11件が成功しました。日本語の入力検証、不正な文字列・バージョン・部屋の拒否、イベントの重複排除、UTF-16の切り詰め、実UDPソケットによる相手発見・受信・ACK・重複発射の防止に加え、3種類の入力レートでの連続音声変換、日本語WAVの実認識を確認しています。Windows上の試験であり、Quest間の通信や実機ASRの確認ではありません。
 
 現在Quest 3を接続できないため、装着しての起動、パススルー、境界復帰、コントローラー、AndroidでのLAN発見・マイク、描画速度は未確認です。
 
@@ -79,7 +80,7 @@ Editorで日本語UIと文字の描画を目視確認しました。下はPC用X
 
 ![Editorでの表示確認。黒背景部分は実機パススルーではない](images/prototype-editor.png)
 
-次の実装対象は端末内ASRです。モデルの日本語精度、発話終了から表示までの遅延、発熱、メモリをQuest 3で比較して選びます。`ISpeechRecognizer` は接続予定のインターフェースで、まだ認識エンジンやPCM配信処理は接続していません。
+次の実装対象は旧VR体験の復元と、複数端末の表示位置・遊び方の改善です。音声機能は実装済みですが、実機で日本語精度、発話終了から表示までの遅延、発熱、メモリを確認して調整します。
 
 ## 同梱フォント
 

@@ -39,6 +39,7 @@ namespace Koekatamarin
             Application.targetFrameRate = 72;
             network = gameObject.AddComponent<LanPeer>();
             speech = gameObject.AddComponent<SpeechInput>();
+            speech.FinalTranscript += SubmitFinalTranscript;
             network.Received += Receive;
             manager = rig.GetComponent<OVRManager>();
             passthrough = rig.GetComponent<OVRPassthroughLayer>();
@@ -117,7 +118,7 @@ namespace Koekatamarin
             Button("接続 / 切断", new Vector3(.18f, .10f, 0), () =>
             { if (network.Connected) network.Disconnect(); else network.Connect(room); });
             Button("サンプル発射", new Vector3(-.18f, -.03f, 0), ShootSample);
-            Button("マイク確認", new Vector3(.18f, -.03f, 0), () => speech.Toggle());
+            Button("音声 ON / OFF", new Vector3(.18f, -.03f, 0), () => speech.Toggle());
             modeLabel = Button("MR / VR", new Vector3(-.18f, -.16f, 0), () =>
             { if (!switching) StartCoroutine(SwitchMode()); });
             Button("次のことば", new Vector3(.18f, -.16f, 0), () => { sampleIndex = (sampleIndex + 1) % samples.Length; });
@@ -244,6 +245,7 @@ namespace Koekatamarin
         }
         void OnDestroy()
         {
+            if (speech != null) speech.FinalTranscript -= SubmitFinalTranscript;
             if (network != null) network.Received -= Receive;
             if (manager != null) manager.shouldBoundaryVisibilityBeSuppressed = false;
         }

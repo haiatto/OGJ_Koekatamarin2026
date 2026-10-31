@@ -1,5 +1,5 @@
 {
   "name": "Koekatamarin.Runtime",
-  "references": ["Unity.TextMeshPro", "Unity.InputSystem", "Oculus.VR"],
+  "references": ["Unity.TextMeshPro", "Unity.InputSystem", "Oculus.VR", "SherpaOnnx"],
   "autoReferenced": true
 }

@@ -231,3 +231,7 @@ pip-log.txt
 /QuestApp/Builds/
 /QuestApp/MemoryCaptures/
 /QuestApp/Recordings/
+/QuestApp/Assets/StreamingAssets/Speech/*.onnx
+/QuestApp/Assets/StreamingAssets/Speech/tokens.txt
+/QuestApp/Assets/Plugins/Android/Speech/**/*.so
+/QuestApp/Assets/Plugins/x86_64/Speech/*.dll
