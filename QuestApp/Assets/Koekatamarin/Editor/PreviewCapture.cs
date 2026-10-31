@@ -34,6 +34,12 @@ namespace Koekatamarin.Editor
             Begin();
         }
 
+        public static void BeginIP()
+        {
+            SessionState.SetBool("Koekatamarin.PreviewIP", true);
+            Begin();
+        }
+
         static void Tick()
         {
             if (EditorApplication.timeSinceStartup - started > 60) { SessionState.SetBool("Koekatamarin.Preview", false); EditorApplication.Exit(1); return; }
@@ -41,6 +47,7 @@ namespace Koekatamarin.Editor
             var experience = Object.FindAnyObjectByType<Experience>();
             if (experience == null || Time.time < 3) return;
             bool vr = SessionState.GetBool("Koekatamarin.PreviewVR", false);
+            bool ip = SessionState.GetBool("Koekatamarin.PreviewIP", false);
             if (returningToMr)
             {
                 if (experience.IsSwitching) return;
@@ -55,7 +62,18 @@ namespace Koekatamarin.Editor
             if (vr && (experience.IsMixedReality || experience.IsSwitching)) return;
             if (!fired)
             {
-                experience.SubmitFinalTranscript("声が文字になる！");
+                if (ip)
+                {
+                    // A documentation preview must not publish the workstation's real interface addresses.
+                    experience.ShowAddressPanel("192.168.1.10（表示例）");
+                    var controls = experience.transform.Find("Control panel/IP address controls");
+                    foreach (char digit in "192.168.1.20") controls.Find(digit.ToString()).GetComponent<PanelAction>().Invoke();
+                    controls.Find("消す").GetComponent<PanelAction>().Invoke();
+                    controls.Find("0").GetComponent<PanelAction>().Invoke();
+                    if (controls.Find("Entered IPv4").GetComponent<TMPro.TextMeshPro>().text != "192.168.1.20")
+                        throw new System.InvalidOperationException("IP keypad entry/backspace failed");
+                }
+                else experience.SubmitFinalTranscript("声が文字になる！");
                 fired = true;
                 firedAt = Time.time;
             }
@@ -69,7 +87,7 @@ namespace Koekatamarin.Editor
             image.ReadPixels(new Rect(0, 0, 1440, 1000), 0, 0);
             image.Apply();
             Directory.CreateDirectory("../.work");
-            File.WriteAllBytes(vr ? "../.work/quest-preview-vr.png" : "../.work/quest-preview.png", image.EncodeToPNG());
+            File.WriteAllBytes(ip ? "../.work/quest-preview-ip.png" : vr ? "../.work/quest-preview-vr.png" : "../.work/quest-preview.png", image.EncodeToPNG());
             if (vr)
             {
                 experience.SetPanelVisible(false);
@@ -82,6 +100,14 @@ namespace Koekatamarin.Editor
             RenderTexture.active = null;
             Object.DestroyImmediate(image);
             Object.DestroyImmediate(render);
+            if (ip)
+            {
+                var controls = experience.transform.Find("Control panel/IP address controls");
+                controls.Find("戻る").GetComponent<PanelAction>().Invoke();
+                if (controls.gameObject.activeSelf || !experience.transform.Find("Control panel/Main controls").gameObject.activeSelf)
+                    throw new System.InvalidOperationException("IP keypad did not return to normal controls");
+                Debug.Log("KOEKATAMARIN_IP_KEYPAD_OK (Editor input; no device network validation)");
+            }
             if (vr) { returningToMr = true; experience.ToggleMode(); return; }
             Finish();
         }
@@ -91,6 +117,7 @@ namespace Koekatamarin.Editor
             EditorApplication.update -= Tick;
             SessionState.SetBool("Koekatamarin.Preview", false);
             SessionState.SetBool("Koekatamarin.PreviewVR", false);
+            SessionState.SetBool("Koekatamarin.PreviewIP", false);
             EditorApplication.Exit(0);
         }
     }

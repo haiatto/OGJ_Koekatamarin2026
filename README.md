@@ -8,7 +8,7 @@
 
 ## 現在の状態
 
-**端末内の日本語音声認識、MR位置合わせ、夕日のVRモードを含むQuest向けAPK（0.4.0）をビルドしました。** 新規Unityプロジェクトは `QuestApp/` です。Quest実機は未検証です。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約330 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
+**端末内の日本語音声認識、MR位置合わせ、夕日のVRモードを含むQuest向けAPK（0.5.0）をビルドしました。** 新規Unityプロジェクトは `QuestApp/` です。Quest実機は未検証です。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約330 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
@@ -43,6 +43,8 @@ Unity Hubで **6000.6.7f1** とAndroid Build Support（SDK/NDK/OpenJDKを含む�
 モデルとネイティブライブラリはGitに含めないため、Unityを起動する前にPython 3.12以降で `python tools/setup_speech.py` を実行してください。固定SHA-256を確認して公式配布物を配置します。生成されたAPKにはモデルが含まれ、Questで追加ダウンロードは不要です。
 
 同じWi-Fi・同じ部屋番号の端末間で直接UDP通信します。全端末が対等なP2Pで、Photon、Unity Relay、UGSアカウント、外部サーバー、NAT越えは使用しません。詳細は[操作・ビルド手順](docs/quest-prototype.ja.md)を参照してください。
+
+自動発見が通らないときは、コントローラーで[相手のIPを指定](docs/lan-manual.ja.md)できます。
 
 ## 原作の取り扱い
 

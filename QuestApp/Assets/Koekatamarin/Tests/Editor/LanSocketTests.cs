@@ -86,6 +86,62 @@ namespace Koekatamarin.Tests
             finally { peer.Disconnect(); UnityEngine.Object.DestroyImmediate(go); }
         }
 
+        [Test]
+        public void ManualAddressConnectsSymmetricPeersWithoutBroadcasts()
+        {
+            var aObject = new GameObject("Manual peer A");
+            var bObject = new GameObject("Manual peer B");
+            var a = aObject.AddComponent<LanPeer>();
+            var b = bObject.AddComponent<LanPeer>();
+            a.BroadcastDiscovery = false; b.BroadcastDiscovery = false;
+            try
+            {
+                a.Connect(4, 0); b.Connect(4, 0);
+                Assert.That(a.Connected && b.Connected, Is.True);
+                Assert.That(a.AddManualAddress("127.0.0.1", b.LocalPort), Is.True);
+                Pump(b); Pump(a); Pump(b);
+                Assert.That(a.PeerCount, Is.EqualTo(1));
+                Assert.That(b.PeerCount, Is.EqualTo(1));
+                string receivedA = null, receivedB = null;
+                a.Received += packet => receivedA = packet.text;
+                b.Received += packet => receivedB = packet.text;
+                Assert.That(a.SendShot("手動で接続", 1), Is.True);
+                Assert.That(b.SendShot("相互に送信", 2), Is.True);
+                Pump(a); Pump(b); Pump(a);
+                Assert.That(receivedA, Is.EqualTo("相互に送信"));
+                Assert.That(receivedB, Is.EqualTo("手動で接続"));
+                a.Disconnect();
+                Assert.That(a.AddManualAddress("127.0.0.1", b.LocalPort), Is.False);
+            }
+            finally
+            {
+                a.Disconnect(); b.Disconnect();
+                UnityEngine.Object.DestroyImmediate(aObject); UnityEngine.Object.DestroyImmediate(bObject);
+            }
+        }
+
+        [Test]
+        public void DiscoveredPeerGetsUnicastKeepaliveWithoutBroadcastOrManualTarget()
+        {
+            var go = new GameObject("Unicast keepalive");
+            var peer = go.AddComponent<LanPeer>();
+            peer.BroadcastDiscovery = false;
+            using var client = new UdpClient(new IPEndPoint(IPAddress.Loopback, 0));
+            client.Client.ReceiveTimeout = 2000;
+            try
+            {
+                peer.Connect(6);
+                Send(client, new LanPacket { kind = "hello", room = 6, peer = Guid.NewGuid().ToString("N") });
+                Pump(peer);
+                Assert.That(Read(client).kind, Is.EqualTo("hello"));
+                // Advance the hello scheduler without a wall-clock sleep in EditMode.
+                typeof(LanPeer).GetField("nextHello", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(peer, -1f);
+                Pump(peer);
+                Assert.That(Read(client).kind, Is.EqualTo("hello"), "The receiving side needs unicast keepalives too");
+            }
+            finally { peer.Disconnect(); UnityEngine.Object.DestroyImmediate(go); }
+        }
+
         static void Send(UdpClient client, LanPacket packet)
         {
             byte[] data = Encoding.UTF8.GetBytes(JsonUtility.ToJson(packet));

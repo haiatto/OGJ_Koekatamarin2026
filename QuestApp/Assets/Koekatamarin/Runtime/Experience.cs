@@ -21,12 +21,19 @@ namespace Koekatamarin
         readonly WordProjectile[] pool = new WordProjectile[64];
         readonly Queue<string> voiceShots = new Queue<string>();
         readonly SharedSpace sharedSpace = new SharedSpace();
+        readonly MrBoundaryGate boundaryGate = new MrBoundaryGate();
         LanPeer network;
         SpeechInput speech;
         OVRManager manager;
         OVRPassthroughLayer passthrough;
         OVRDisplay display;
         Transform panel;
+        Transform mainControls;
+        Transform addressControls;
+        TextMeshPro addressEntry;
+        TextMeshPro addressLocal;
+        TextMeshPro addressStatus;
+        string enteredAddress = "";
         TextMeshPro status;
         TextMeshPro roomLabel;
         TextMeshPro modeLabel;
@@ -36,6 +43,8 @@ namespace Koekatamarin
         LineRenderer directionMarker;
         bool mr = true;
         bool switching;
+        bool applicationPaused;
+        Coroutine modeTransition;
         int room = 1;
         int sampleIndex;
         int projectileIndex;
@@ -77,10 +86,7 @@ namespace Koekatamarin
             CreateAlignmentMarkers();
             yield return null;
             PlacePanel();
-            // Passthrough initialization is asynchronous; suppression is requested only once it is active.
-            float until = Time.realtimeSinceStartup + 10f;
-            while (!OVRManager.IsInsightPassthroughInitialized() && Time.realtimeSinceStartup < until) yield return null;
-            if (mr && OVRManager.IsInsightPassthroughInitialized()) manager.shouldBoundaryVisibilityBeSuppressed = true;
+            BeginMrBoundaryRequest();
         }
 
         void ConfigureCamera(bool isMr)
@@ -109,22 +115,25 @@ namespace Koekatamarin
             return label;
         }
 
-        TextMeshPro Button(string text, Vector3 position, System.Action action)
+        TextMeshPro Button(string text, Vector3 position, System.Action action, Transform parent = null, float width = .32f)
         {
+            if (parent == null) parent = mainControls;
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = text;
-            go.transform.SetParent(panel, false);
+            go.transform.SetParent(parent, false);
             go.transform.localPosition = position;
-            go.transform.localScale = new Vector3(.32f, .10f, .025f);
+            go.transform.localScale = new Vector3(width, .10f, .025f);
             go.GetComponent<Renderer>().sharedMaterial = panelMaterial;
             go.AddComponent<PanelAction>().Click = action;
-            return Label(panel, text, position + new Vector3(0, 0, -.02f), .42f, new Vector2(.3f, .09f));
+            return Label(parent, text, position + new Vector3(0, 0, -.02f), .42f, new Vector2(width - .02f, .09f));
         }
 
         void BuildPanel()
         {
             panel = new GameObject("Control panel").transform;
             panel.SetParent(transform);
+            mainControls = new GameObject("Main controls").transform;
+            mainControls.SetParent(panel, false);
             Label(panel, "コエカタマリン 2026", new Vector3(0, .33f, 0), .65f, new Vector2(1.2f, .12f));
             Label(panel, "声を文字にして飛ばそう", new Vector3(0, .24f, 0), .32f, new Vector2(1.2f, .1f));
             roomLabel = Button("部屋 1 →", new Vector3(-.18f, .10f, 0), () =>
@@ -139,8 +148,54 @@ namespace Koekatamarin
             Button("次のことば", new Vector3(.18f, -.16f, 0), () => { sampleIndex = (sampleIndex + 1) % samples.Length; });
             alignmentLabel = Button("位置合わせ", new Vector3(-.18f, -.29f, 0), BeginAlignment);
             Button("位置を解除", new Vector3(.18f, -.29f, 0), InvalidateAlignment);
-            status = Label(panel, "準備中", new Vector3(0, -.56f, -.02f), .28f, new Vector2(1.4f, .4f));
+            Button("IPで接続", new Vector3(0, -.42f, 0), ShowAddressPanel);
+            status = Label(mainControls, "準備中", new Vector3(0, -.70f, -.02f), .28f, new Vector2(1.4f, .4f));
             status.textWrappingMode = TextWrappingModes.Normal;
+            BuildAddressPanel();
+        }
+
+        void BuildAddressPanel()
+        {
+            addressControls = new GameObject("IP address controls").transform;
+            addressControls.SetParent(panel, false);
+            addressLocal = Label(addressControls, "", new Vector3(0, .10f, -.02f), .28f, new Vector2(1.4f, .10f));
+            addressEntry = Label(addressControls, "相手のIPv4を入力", new Vector3(0, -.01f, -.02f), .48f, new Vector2(1.1f, .10f));
+            addressEntry.name = "Entered IPv4";
+            string[] keys = { "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "消す" };
+            for (int i = 0; i < keys.Length; i++)
+            {
+                string key = keys[i];
+                Button(key, new Vector3((i % 3 - 1) * .24f, -.14f - (i / 3) * .12f, 0),
+                    () => EditAddress(key), addressControls, .20f);
+            }
+            Button("接続先に追加", new Vector3(-.18f, -.64f, 0), AddAddress, addressControls);
+            Button("戻る", new Vector3(.18f, -.64f, 0), () =>
+            { addressControls.gameObject.SetActive(false); mainControls.gameObject.SetActive(true); }, addressControls);
+            addressStatus = Label(addressControls, "", new Vector3(0, -.80f, -.02f), .28f, new Vector2(1.5f, .2f));
+            addressControls.gameObject.SetActive(false);
+        }
+
+        public void ShowAddressPanel()
+        { ShowAddressPanel(LanAddress.LocalAddresses()); }
+
+        public void ShowAddressPanel(string localAddresses)
+        {
+            addressLocal.text = "部屋 " + room + " / 自分のIP: " + localAddresses;
+            mainControls.gameObject.SetActive(false);
+            addressControls.gameObject.SetActive(true);
+        }
+
+        void EditAddress(string key)
+        {
+            if (key == "消す") { if (enteredAddress.Length > 0) enteredAddress = enteredAddress.Substring(0, enteredAddress.Length - 1); }
+            else if (enteredAddress.Length < 15) enteredAddress += key;
+            addressEntry.text = enteredAddress.Length > 0 ? enteredAddress : "相手のIPv4を入力";
+        }
+
+        void AddAddress()
+        {
+            if (!network.Connected) network.Connect(room);
+            network.AddManualAddress(enteredAddress);
         }
 
         void PlacePanel()
@@ -157,7 +212,28 @@ namespace Koekatamarin
             if (beam != null) beam.enabled = visible;
         }
 
-        public void ToggleMode() { if (!switching) StartCoroutine(SwitchMode()); }
+        public void ToggleMode() { if (!switching && !applicationPaused) modeTransition = StartCoroutine(SwitchMode()); }
+
+        void BeginMrBoundaryRequest()
+        {
+            if (manager == null || !mr || switching || applicationPaused) return;
+            manager.isInsightPassthroughEnabled = true;
+            passthrough.enabled = true;
+            manager.shouldBoundaryVisibilityBeSuppressed = false;
+            boundaryGate.Begin(Time.realtimeSinceStartup);
+        }
+
+        string BoundaryStatus()
+        {
+            if (boundaryGate.Current == MrBoundaryGate.State.Waiting) return "MR準備中";
+            if (boundaryGate.Current == MrBoundaryGate.State.TimedOut) return "MR初期化待ち時間超過";
+#if UNITY_EDITOR
+            return "境界: 実機で確認";
+#else
+            if (OVRPlugin.GetBoundaryVisibility(out var state) != OVRPlugin.Result.Success) return "境界: 未確認";
+            return state == OVRPlugin.BoundaryVisibility.Suppressed ? "境界: 抑制中" : "境界: 通常";
+#endif
+        }
 
         void CreateAlignmentMarkers()
         {
@@ -222,6 +298,7 @@ namespace Koekatamarin
         IEnumerator SwitchMode()
         {
             switching = true;
+            boundaryGate.Cancel();
             if (mr)
             {
                 if (environment == null) { feedback = "夕日の風景が見つかりません"; switching = false; yield break; }
@@ -257,17 +334,18 @@ namespace Koekatamarin
                 ConfigureCamera(true);
                 if (environment != null) environment.Hide();
                 mr = true;
-                float until = Time.realtimeSinceStartup + 10;
-                while (!OVRManager.IsInsightPassthroughInitialized() && Time.realtimeSinceStartup < until) yield return null;
-                manager.shouldBoundaryVisibilityBeSuppressed = OVRManager.IsInsightPassthroughInitialized();
                 feedback = "MRモード";
             }
             switching = false;
+            modeTransition = null;
+            if (mr) BeginMrBoundaryRequest();
         }
 
         void Update()
         {
             if (network == null || panel == null || beam == null) return;
+            if (mr && !switching && !applicationPaused && boundaryGate.Tick(Time.realtimeSinceStartup, OVRManager.IsInsightPassthroughInitialized()))
+                manager.shouldBoundaryVisibilityBeSuppressed = true;
             bool pressed = OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch);
             var ray = new Ray(rig.rightHandAnchor.position, rig.rightHandAnchor.forward);
             if (!OVRManager.isHmdPresent)
@@ -304,7 +382,9 @@ namespace Koekatamarin
                 status.text = samples[sampleIndex] + "\n" +
                     (network.Connected ? "部屋 " + room + " / 相手 " + network.PeerCount + "台 / 未達 " + network.MissedDeliveries : network.Status) +
                     "\n" + speech.Status + "  " + speech.Level.ToString("F3") +
-                    "\n" + (sharedSpace.Ready ? "位置合わせ済 / 相手 " + network.AlignedPeerCount + "台" : "相手の文字は手前に表示") + "\n" + feedback;
+                    "\n" + (sharedSpace.Ready ? "位置合わせ済 / 相手 " + network.AlignedPeerCount + "台" : "相手の文字は手前に表示") +
+                    "\n" + BoundaryStatus() + "\n" + feedback;
+                addressStatus.text = network.Status + "\n相手 " + network.PeerCount + "台 / 戻ると通常の操作画面";
                 modeLabel.text = switching ? "切替中" : (mr ? "MR → VR" : "VR → MR");
                 alignmentLabel.text = sharedSpace.Capturing ? "やり直す" : sharedSpace.Ready ? "位置合わせ済" : "位置合わせ";
             }
@@ -331,7 +411,7 @@ namespace Koekatamarin
                 feedback = "文字をLANへ送信できませんでした";
         }
         void ShootSample()
-        { if (voiceShots.Count == 0 && Time.unscaledTime >= nextShot) Emit(samples[sampleIndex]); }
+        { if (!addressControls.gameObject.activeSelf && voiceShots.Count == 0 && Time.unscaledTime >= nextShot) Emit(samples[sampleIndex]); }
         void Receive(LanPacket packet)
         {
             Pose pose = mr && sharedSpace.Ready && packet.space == 1
@@ -354,14 +434,16 @@ namespace Koekatamarin
         }
         void OnApplicationPause(bool paused)
         {
-            if (paused) InvalidateAlignment();
-            if (!paused && manager != null && mr)
+            applicationPaused = paused;
+            if (paused)
             {
-                manager.isInsightPassthroughEnabled = true;
-                passthrough.enabled = true;
-                // A resume requires a fresh passthrough state check.
-                manager.shouldBoundaryVisibilityBeSuppressed = OVRManager.IsInsightPassthroughInitialized();
+                InvalidateAlignment();
+                boundaryGate.Cancel();
+                if (modeTransition != null) { StopCoroutine(modeTransition); modeTransition = null; }
+                switching = false;
+                if (manager != null) manager.shouldBoundaryVisibilityBeSuppressed = false;
             }
+            else BeginMrBoundaryRequest();
         }
         void OnDestroy()
         {

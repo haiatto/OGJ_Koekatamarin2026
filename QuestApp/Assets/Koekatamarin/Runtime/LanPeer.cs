@@ -33,6 +33,8 @@ namespace Koekatamarin
         readonly Dictionary<string, Peer> peers = new Dictionary<string, Peer>();
         readonly List<Pending> pending = new List<Pending>();
         readonly List<string> expired = new List<string>();
+        readonly List<IPEndPoint> manualTargets = new List<IPEndPoint>();
+        readonly HashSet<IPEndPoint> helloTargets = new HashSet<IPEndPoint>();
         RecentEvents recent = new RecentEvents();
         UdpClient socket;
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -44,6 +46,8 @@ namespace Koekatamarin
         float nextSend;
         public bool Connected => socket != null;
         public int PeerCount => peers.Count;
+        public int LocalPort => socket == null ? 0 : ((IPEndPoint)socket.Client.LocalEndPoint).Port;
+        public bool BroadcastDiscovery { get; set; } = true;
         public bool SharedSpaceReady { get; set; }
         public int AlignedPeerCount
         {
@@ -53,10 +57,10 @@ namespace Koekatamarin
         public string Status { get; private set; } = "LAN未接続";
         public event Action<LanPacket> Received;
 
-        public void Connect(int roomNumber)
+        public void Connect(int roomNumber, int listenPort = Port)
         {
             Disconnect();
-            if (roomNumber < 1 || roomNumber > 9) return;
+            if (roomNumber < 1 || roomNumber > 9 || listenPort < 0 || listenPort > 65535) return;
             room = roomNumber;
             self = Guid.NewGuid().ToString("N");
             recent = new RecentEvents();
@@ -67,7 +71,7 @@ namespace Koekatamarin
             {
                 socket = new UdpClient(AddressFamily.InterNetwork);
                 socket.Client.ReceiveBufferSize = 65536;
-                socket.Client.Bind(new IPEndPoint(IPAddress.Any, Port));
+                socket.Client.Bind(new IPEndPoint(IPAddress.Any, listenPort));
                 socket.EnableBroadcast = true;
                 socket.Client.Blocking = false;
                 AcquireWifiLock();
@@ -83,7 +87,24 @@ namespace Koekatamarin
             ReleaseWifiLock();
             peers.Clear();
             pending.Clear();
+            manualTargets.Clear();
             Status = "LAN未接続";
+        }
+
+        public bool AddManualAddress(string value, int port = Port)
+        {
+            if (!Connected) { Status = "先にLANへ接続してください"; return false; }
+            if (!LanAddress.TryParse(value, out var address) || port < 1 || port > 65535)
+            { Status = "IPv4を入力してください（例: 192.168.1.10）"; return false; }
+            var endpoint = new IPEndPoint(address, port);
+            if (!manualTargets.Contains(endpoint))
+            {
+                if (manualTargets.Count >= MaxPeers) { Status = "手動の接続先は7台までです。切断すると解除します"; return false; }
+                manualTargets.Add(endpoint);
+            }
+            Send(Encode(Packet("hello")), endpoint);
+            Status = value + " へ探索中（相手も同じ部屋で接続）";
+            return true;
         }
 
         public bool SendShot(string text, int style, int space = 0, Vector3 position = default, float yaw = 0)
@@ -123,7 +144,13 @@ namespace Koekatamarin
             if (now >= nextHello)
             {
                 nextHello = now + 1f;
-                Send(Encode(Packet("hello")), new IPEndPoint(IPAddress.Broadcast, Port));
+                byte[] hello = Encode(Packet("hello"));
+                if (BroadcastDiscovery) Send(hello, new IPEndPoint(IPAddress.Broadcast, Port));
+                helloTargets.Clear();
+                foreach (var target in manualTargets) helloTargets.Add(target);
+                // Unicast keepalives keep both sides alive even if all broadcasts are filtered.
+                foreach (var peer in peers.Values) helloTargets.Add(peer.endpoint);
+                foreach (var target in helloTargets) Send(hello, target);
             }
             // Limit per-frame work even if a sender floods the socket.
             for (int i = 0; i < 64; i++)

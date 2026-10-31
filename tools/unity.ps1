@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('Import','TextResources','Setup','Tests','Android','Preview','PreviewVR')]
+    [ValidateSet('Import','TextResources','Setup','Tests','Android','Preview','PreviewVR','PreviewIP')]
     [string]$Stage = 'Import',
     [string]$Editor = 'C:\Program Files\Unity\Hub\Editor\6000.6.7f1\Editor\Unity.exe',
     [switch]$WithoutEditorXr
@@ -11,7 +11,7 @@ $logPath = Join-Path $repoPath '.work'
 New-Item -ItemType Directory -Force -Path $logPath | Out-Null
 if (!(Test-Path -LiteralPath $Editor)) { throw "Unity Editor not found: $Editor" }
 $unityArgs = @('-batchmode', '-projectPath', ('"' + $projectPath + '"'), '-logFile', ('"' + (Join-Path $logPath "unity-$Stage.log") + '"'))
-if ($Stage -notin @('Preview','PreviewVR')) { $unityArgs += '-nographics' }
+if ($Stage -notin @('Preview','PreviewVR','PreviewIP')) { $unityArgs += '-nographics' }
 else { $unityArgs += '-force-d3d11' }
 switch ($Stage) {
     'Import' { $unityArgs += '-quit' }
@@ -21,6 +21,7 @@ switch ($Stage) {
     'Android' { $unityArgs += @('-quit', '-executeMethod', 'Koekatamarin.Editor.ProjectSetup.BuildAndroid', '-buildTarget', 'Android') }
     'Preview' { $unityArgs += @('-executeMethod', 'Koekatamarin.Editor.PreviewCapture.Begin') }
     'PreviewVR' { $unityArgs += @('-executeMethod', 'Koekatamarin.Editor.PreviewCapture.BeginVR') }
+    'PreviewIP' { $unityArgs += @('-executeMethod', 'Koekatamarin.Editor.PreviewCapture.BeginIP') }
 }
 $pluginBackups = @{}
 try {
