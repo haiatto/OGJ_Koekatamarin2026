@@ -109,6 +109,8 @@ Supertonic 3も候補にはなるが、原作者のリポジトリは2026-09-09�
 
 ユーザーとの確認により、**同じWi-Fi内のQuest同士で直接通信するP2P**を採用方針とする。専用サーバー、クラウド中継、通信サービスの従量課金を必要としない構成を選ぶ。
 
+**NAT越えは基本的に対象外**とする。インターネット越しの対戦、STUN/TURN、ホールパンチング、外部の接続支援サービスの選定・実装は開発計画に含めない。将来のNAT越え対応を理由に通信ライブラリを選ぶこともせず、LAN内での接続・発見・同期を優先する。対応範囲を変える場合は、別の仕様変更として扱う。
+
 **Unity Relayは採用候補から除外する。** 無料枠があっても、有料利用時に支出上限を保証できる方式ではないため、このプロジェクトの条件に合わない。将来追加する標準機能としても予定しない。公式にはUGSは従量課金で、予算は通知用であり自動停止しない。またRelayは予算アラートの対象外とされている。[UGSの課金方式](https://docs.unity.com/en-us/services/pricing-and-billing)、[予算アラートの制約](https://docs.unity.com/en-us/cloud/billing/budget)。
 
 ライブラリと接続構成は未確定。NGO + Unity Transportの直接接続やMirrorのLAN機能は調査対象だが、1台のQuestがホストになる方式と、各端末が対等なP2P方式は区別して選定する。NGOを選ぶこととRelayを利用することは別であり、LAN直結にRelayは不要。[Unityの直接接続設定](https://mp-docs.dl.it.unity3d.com/netcode/current/components/networkmanager/)、[MirrorのLAN内自動発見](https://mirror-networking.gitbook.io/docs/manual/components/network-discovery)。
