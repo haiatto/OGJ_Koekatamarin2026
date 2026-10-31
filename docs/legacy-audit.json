@@ -1,0 +1,234 @@
+{
+  "source_commit": "c07556014bbb4a17f4973f38aac01426bd11b4ea",
+  "tracked_file_count": 1004,
+  "assets_file_count_including_meta": 812,
+  "asset_extensions_excluding_meta": {
+    ".cs": 129,
+    ".mat": 54,
+    ".prefab": 24,
+    ".fbx": 20,
+    ".unity": 20,
+    ".png": 19,
+    ".tga": 12,
+    ".jpg": 11,
+    ".psd": 10,
+    ".dll": 7,
+    ".shader": 7,
+    ".tif": 6,
+    ".txt": 6,
+    ".pdf": 4,
+    ".asset": 2,
+    ".ttf": 2,
+    ".unitypackage": 2,
+    ".mp3": 2,
+    ".so": 2,
+    ".guiskin": 1,
+    ".controller": 1,
+    ".wav": 1,
+    ".sbsar": 1,
+    ".plist": 1,
+    "": 1,
+    ".strings": 1,
+    ".xml": 1,
+    ".cginc": 1
+  },
+  "missing_file_meta": [],
+  "orphan_meta": [
+    "New Unity Project/Assets/Photon Unity Networking/Plugins/PhotonNetwork/library.meta"
+  ],
+  "duplicate_guids": {},
+  "yaml_serialized_files_scanned": 78,
+  "binary_or_non_yaml_serialized_files_not_scanned": [
+    "New Unity Project/Assets/DemoVikings/Demo/Assets/Terrain.asset",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoBoxes/DemoBoxes-Scene.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoBoxes/Resources/BoxPrefab.prefab",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoBoxes/Resources/UnitMaterial.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoBoxes/Resources/UnitMaterialEmit.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoFriendsAndCustomAuth/DemoFriends-Scene.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoHub/DemoHub-Scene.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoWorker/Art/Character Controllers/Sources/PrototypeCharacter/Materials/constructor_done.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoWorker/Art/SimpleMaterial.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoWorker/DemoWorker-Scene.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoWorker/DemoWorkerGame-Scene.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoWorker/Resources/Player.prefab",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/MarcoPolo-Scene.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/creature1-tanden.1.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/creature1-tanden.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/muktarcolorgoed_1.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/muktargame-Mat.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/muktargame-No Name.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/muktargame-oog.1.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/muktargame-oog.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/muktargame-tanden.1.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/muktargame-tanden.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/Materials/oudemanoogcolor.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/Monstergame/Resources/monsterprefab.prefab",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_MainMenuScene.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 1/Tutorial_1A.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 1/Tutorial_1B.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 1/Tutorial_1C.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 2/Resources/Tutorial_2B_Prefab.prefab",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 2/Tutorial_2A1.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 2/Tutorial_2A2.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 2/Tutorial_2A3.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/_Tutorial 2/Tutorial_2B.unity",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/zSharedAssets/Materials/cube.mat",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/PUNGuide_M2H/zSharedAssets/Materials/tile.mat"
+  ],
+  "unresolved_guid_references": {
+    "0620bdf0302d84423be4aa15b82a0e11": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4Example.mat"
+    ],
+    "23a4e1813b662534384f48aa5f3a25f2": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "2b6e541d3f04e8b4faac59b69a74ed62": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "2c064e6d46a889146a62999decd6ea26": [
+      "New Unity Project/Assets/DemoVikings/Scenes/VikingScene.unity"
+    ],
+    "433c952c68ca2c940b589f49d74dda21": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "439991328051fa043842d230a8e43769": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "4a5814e1d7d92b94ca4864d5a22e4718": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "4facc21e08e3a43ed97c930f7dae6e7b": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4Example.mat",
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4ExampleSimple.mat"
+    ],
+    "6a2a9915ec3459248b4b95e5baefeedb": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "8c20c380af461574f99424a22acd34c1": [
+      "New Unity Project/Assets/Game/Chara/Resouces/TeddyBear.prefab"
+    ],
+    "8d7d55852243098439b1ad7dfd9db84b": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "9827681c9e288e44a8f86d1b922b9d11": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "a75b62595c8d11a418e6efcd5152af83": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "a782b26d6436b48d9882906b9f8ca31a": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4Example.mat",
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4ExampleSimple.mat"
+    ],
+    "ae466e8cb7792254aa4757c06718afb5": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/Prefab/Viking.prefab"
+    ],
+    "b25189afcc5d4254c9c2c2a9aaf02a27": [
+      "New Unity Project/Assets/DemoVikings/Scenes/VikingScene.unity"
+    ],
+    "cff6f2c02e93742c095cd0c69d3d92ce": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4Example.mat"
+    ],
+    "d04820783b678ca48a9989fc47fd5f08": [
+      "New Unity Project/Assets/DemoVikings/Demo/Assets/3D/Materials/512UVRenderFinal 1.mat"
+    ],
+    "dc30b984e8e3c4cdfb38d5fceb411602": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4Example.mat",
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4ExampleSimple.mat"
+    ],
+    "eb9e91ee4c264b942a46baeec92ca0a4": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4Example.mat"
+    ],
+    "f1fdc2840422b4d46b52860f838dc54b": [
+      "New Unity Project/Assets/OVR/Materials/MagHUDRef.mat",
+      "New Unity Project/Assets/OVR/Materials/MagHUDTracked.mat"
+    ],
+    "f5294d661371a4446a8ef1d6690b5f5c": [
+      "New Unity Project/Assets/Game/Chara/Resouces/TeddyBear.prefab"
+    ],
+    "ff6e0fbcfc24e4f95a2711ea0e73dd6a": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4Example.mat"
+    ]
+  },
+  "build_scenes": [
+    {
+      "enabled": false,
+      "path": "Assets/Photon Unity Networking/Demos/DemoHub/DemoHub-Scene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/Photon Unity Networking/Demos/DemoBoxes/DemoBoxes-Scene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/Photon Unity Networking/Demos/DemoFriendsAndCustomAuth/DemoFriends-Scene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/Photon Unity Networking/Demos/DemoSynchronization/DemoSynchronization-Scene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/Photon Unity Networking/Demos/DemoWorker/DemoWorker-Scene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/Photon Unity Networking/Demos/DemoWorker/DemoWorkerGame-Scene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/Photon Unity Networking/Demos/MarcoPolo-Tutorial/MarcoPolo-Scene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/DemoVikings/Scenes/VikingScene.unity",
+      "present": true
+    },
+    {
+      "enabled": false,
+      "path": "Assets/Game/test_haiatto.unity",
+      "present": true
+    },
+    {
+      "enabled": true,
+      "path": "Assets/Game/test_taguchi.unity",
+      "present": true
+    }
+  ],
+  "enabled_scene_static_dependency_count": 43,
+  "enabled_scene_static_unresolved_guids": {
+    "4facc21e08e3a43ed97c930f7dae6e7b": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4ExampleSimple.mat"
+    ],
+    "a782b26d6436b48d9882906b9f8ca31a": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4ExampleSimple.mat"
+    ],
+    "dc30b984e8e3c4cdfb38d5fceb411602": [
+      "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Materials/Water4ExampleSimple.mat"
+    ]
+  },
+  "enabled_scene_binary_dependencies_not_scanned": [],
+  "font_files": [
+    "New Unity Project/Assets/Game/HGRPP1001.TTF",
+    "New Unity Project/Assets/Photon Unity Networking/Demos/DemoBoxes/Resources/eurof35.ttf"
+  ],
+  "certificate_files_review_required": [
+    "ReleseFolder/koekatamarin_server/server_en/test_key.pfx",
+    "ReleseFolder/koekatamarin_server/server_ja/test_key.pfx",
+    "server/test_key.pfx"
+  ],
+  "lfs_pointer_files": [],
+  "limitations": [
+    "Static tracked-file/GUID inventory only; not a Unity import or build test.",
+    "Binary serialized assets and fileID references require Unity inspection.",
+    "Scene dependency traversal excludes runtime Resources/Photon lookups, importer metadata, and embedded unitypackages.",
+    "Presence of binaries does not establish Android ARM64 compatibility or redistribution rights."
+  ]
+}
