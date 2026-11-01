@@ -36,15 +36,24 @@ namespace Koekatamarin.Tests
 
         [UnityTest]
         public IEnumerator JapaneseSpeechPassesVadAndNativeRecognizerThenResetDropsPendingResults()
+        { return RecognizeFixture(SpeechModels.Model.SenseVoice); }
+
+        [UnityTest]
+        public IEnumerator ReazonSpeechRecognizesJapaneseFixtureAndResets()
+        { return RecognizeFixture(SpeechModels.Model.ReazonSpeech); }
+
+        static IEnumerator RecognizeFixture(SpeechModels.Model model)
         {
             string models = Path.Combine(Application.streamingAssetsPath, "Speech");
-            for (int i = 0; i < SpeechModels.Files.Length; i++)
-                Assert.That(SpeechModels.Valid(Path.Combine(models, SpeechModels.Files[i]), SpeechModels.Hashes[i]), Is.True,
+            var files = SpeechModels.ModelFiles(model);
+            var hashes = SpeechModels.ModelHashes(model);
+            for (int i = 0; i < files.Length; i++)
+                Assert.That(SpeechModels.Valid(Path.Combine(models, files[i]), hashes[i]), Is.True,
                     "Run python tools/setup_speech.py first");
             string fixture = Path.GetFullPath(Path.Combine(Application.dataPath,
                 "../../.work/asr/unpacked/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17/test_wavs/ja.wav"));
             float[] samples = ReadPcm16Wave(fixture);
-            using var engine = new LocalSpeechRecognizer(models);
+            using var engine = new LocalSpeechRecognizer(models, model);
             var deadline = Stopwatch.StartNew();
             while (!engine.Ready && engine.Error == null && deadline.Elapsed.TotalSeconds < 60) yield return null;
             Assert.That(engine.Error, Is.Null);
@@ -66,7 +75,7 @@ namespace Koekatamarin.Tests
             Assert.That(result.Text, Does.Contain("中学").And.Contain("弁当"), "Known Japanese fixture must be recognized, not just any Japanese output");
             Assert.That(result.AudioSeconds, Is.GreaterThan(.2));
             Assert.That(engine.DroppedWindows, Is.Zero);
-            UnityEngine.Debug.Log("ASR_FIXTURE text=" + result.Text + " decode=" + result.DecodeSeconds.ToString("F3") + "s audio=" + result.AudioSeconds.ToString("F3") + "s");
+            UnityEngine.Debug.Log("ASR_FIXTURE model=" + SpeechModels.Name(model) + " text=" + result.Text + " decode=" + result.DecodeSeconds.ToString("F3") + "s audio=" + result.AudioSeconds.ToString("F3") + "s");
             engine.Reset();
             Assert.That(engine.TryRead(out _), Is.False);
             for (int i = 0; i < 50; i++) { engine.Accept(new float[512]); yield return null; }

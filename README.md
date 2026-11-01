@@ -8,7 +8,7 @@
 
 ## 現在の状態
 
-**端末内の日本語音声認識、MR位置合わせ、夕日のVRモードを含むQuest向けAPK（0.5.0）をビルドしました。** 新規Unityプロジェクトは `QuestApp/` です。Quest実機は未検証です。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約330 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
+**ReazonSpeechの切替、手操作・VR移動、5層の文字と部屋への衝突を追加したQuest向けAPK（0.6.0）をQuest 3に導入しました。** 新規Unityプロジェクトは `QuestApp/` です。実機ログでReazonSpeechの認識処理と部屋メッシュ読込を確認しました。手操作・移動・衝突の体感と認識精度は引き続き実機確認が必要です。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約506 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
@@ -16,7 +16,8 @@
 
 - Quest 3単体動作、MRを標準とします。オプションのVRでは原作素材を使った夕日・砂浜と、新しい軽量な水面を表示します。[VR復元の範囲](docs/vr-restoration.ja.md)。
 - 原作の中心は「音声認識 → 日本語の文字を塊として飛ばす」です。読み上げ（TTS）は別機能です。
-- 日本語音声認識はSenseVoice Small INT8＋Silero VADによる端末内処理です。発話の区切りで文字を発射します。[構成・ライセンス・検証範囲](docs/offline-speech.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
+- 日本語音声認識は端末内処理です。ReazonSpeech k2-v2を初期選択し、SenseVoice Smallへパネルで切り替えられます。音声は起動時ONで、Silero VADによる発話の区切りで文字を発射します。[音声・手・移動の操作](docs/modern-controls.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
+- 文字は頭の前から発射する5層構造とRigidbodyに変更しました。MRでは許可された部屋データのメッシュ、VRでは地面・海面に衝突します。[原作の文字・衝突・海・声量の調査](docs/original-voice-and-water.ja.md)。
 - 同室のMRでは、共通の2点をコントローラーで指定して文字の発射位置と向きを共有できます。[位置合わせの操作](docs/shared-space.ja.md)。
 - NAT越えは基本的に対象外とし、インターネット越しの対戦や接続支援サービスは開発計画に含めません。
 - 元のUnity 4プロジェクトを最新Unityでそのまま開く前に、[調査報告](docs/revival-investigation.ja.md)を参照してください。
@@ -38,7 +39,7 @@
 
 ## Questプロトタイプ
 
-Unity Hubで **6000.6.7f1** とAndroid Build Support（SDK/NDK/OpenJDKを含む）を入れ、`QuestApp/` を開きます。Meta XR Core SDK 207.0.1、OpenXR 1.19.0、URP 17.6.0を使用します。
+Unity Hubで **6000.6.7f1** とAndroid Build Support（SDK/NDK/OpenJDKを含む）を入れ、`QuestApp/` を開きます。Meta XR Core SDK 207.0.1、MR Utility Kit 207.0.0、OpenXR 1.19.0、URP 17.6.0を使用します。
 
 モデルとネイティブライブラリはGitに含めないため、Unityを起動する前にPython 3.12以降で `python tools/setup_speech.py` を実行してください。固定SHA-256を確認して公式配布物を配置します。生成されたAPKにはモデルが含まれ、Questで追加ダウンロードは不要です。
 

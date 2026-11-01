@@ -144,6 +144,8 @@ def main():
     for name in ('model.int8.onnx', 'tokens.txt'):
         shutil.copyfile(unpacked / MODEL / name, models / name)
     shutil.copyfile(CACHE / 'silero_vad.onnx', models / 'silero_vad.onnx')
+    from setup_reazon import main as prepare_reazon
+    prepare_reazon()
     print('Offline speech assets ready. No download is needed on the Quest.', flush=True)
 
 

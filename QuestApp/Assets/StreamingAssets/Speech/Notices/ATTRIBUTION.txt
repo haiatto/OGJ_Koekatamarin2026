@@ -26,3 +26,9 @@ MIT license and third-party notices are included.
 
 Models are bundled inside the APK. No speech is uploaded, no inference
 service account is required, and no audio recordings are written to disk.
+
+ReazonSpeech k2-v2: Reazon Human Interaction Laboratory.
+https://huggingface.co/reazon-research/reazonspeech-k2-v2
+Revision: 291488c8151be24d7da4bf7af26e533fad96e407
+Apache-2.0 model license (model card); encoder/joiner INT8, decoder FP32.
+License text included as ReazonSpeech-LICENSE.txt.

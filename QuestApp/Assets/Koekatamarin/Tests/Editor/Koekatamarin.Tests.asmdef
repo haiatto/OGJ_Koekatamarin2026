@@ -1,6 +1,6 @@
 {
   "name": "Koekatamarin.Tests",
-  "references": ["Koekatamarin.Runtime"],
+  "references": ["Koekatamarin.Runtime", "Unity.TextMeshPro"],
   "includePlatforms": ["Editor"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

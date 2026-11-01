@@ -28,13 +28,38 @@ namespace Koekatamarin
         bool microphoneStarted;
         float nextResult;
         string lastText = "";
+        SpeechModels.Model workerModel;
+        bool resumeAfterPause;
+        bool retiringRecognizer;
+        bool applicationPaused;
+        public SpeechModels.Model Model { get; private set; } = SpeechModels.Model.ReazonSpeech;
+        public string ModelName => SpeechModels.Name(Model);
         public float Level { get; private set; }
         public string Status { get; private set; } = "音声入力 停止";
         public bool Running => requested;
+        public bool IsCapturing => clip != null;
 
         public void Toggle()
         {
             if (requested) { Stop(); return; }
+            StartListening();
+        }
+
+        public void NextModel()
+        {
+            bool restart = requested;
+            Stop();
+            Model = Model == SpeechModels.Model.ReazonSpeech ? SpeechModels.Model.SenseVoice : SpeechModels.Model.ReazonSpeech;
+            // Release the old native model even if the microphone is currently off.
+            recognizer?.Dispose();
+            retiringRecognizer = recognizer != null;
+            Status = ModelName + " 選択中";
+            if (restart) StartListening();
+        }
+
+        public void StartListening()
+        {
+            if (requested || !isActiveAndEnabled) return;
             requested = true;
             int id = ++requestId;
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -53,28 +78,33 @@ namespace Koekatamarin
 
         IEnumerator StartCapture()
         {
-            if (recognizer != null && recognizer.Error != null)
+            if (recognizer != null && (retiringRecognizer || recognizer.Error != null || recognizer.Finished || workerModel != Model))
             {
                 recognizer.Dispose();
                 while (!recognizer.Finished) yield return null;
                 recognizer = null;
+                retiringRecognizer = false;
             }
             if (recognizer == null)
             {
-                string target = Path.Combine(Application.persistentDataPath, SpeechModels.CacheVersion);
+                var files = SpeechModels.ModelFiles(Model);
+                var hashes = SpeechModels.ModelHashes(Model);
+                string target = Path.Combine(Application.persistentDataPath, SpeechModels.Cache(Model));
                 try { Directory.CreateDirectory(target); }
                 catch (Exception e) { Fail("音声モデルの保存先を作れません: " + e.Message); yield break; }
-                for (int i = 0; i < SpeechModels.Files.Length; i++)
+                for (int i = 0; i < files.Length; i++)
                 {
-                    string destination = Path.Combine(target, SpeechModels.Files[i]);
-                    string expected = SpeechModels.Hashes[i];
-                    Status = "音声モデルを確認中 " + (i + 1) + "/3";
+                    string destination = Path.Combine(target, files[i]);
+                    try { Directory.CreateDirectory(Path.GetDirectoryName(destination)); }
+                    catch (Exception e) { Fail("モデル保存先エラー: " + e.Message); yield break; }
+                    string expected = hashes[i];
+                    Status = ModelName + " 確認中 " + (i + 1) + "/" + files.Length;
                     Task<bool> check = Task.Run(() => SpeechModels.Valid(destination, expected));
                     while (!check.IsCompleted) yield return null;
                     if (check.IsFaulted) { Fail("音声モデルを確認できません"); yield break; }
                     if (check.Result) continue;
-                    Status = "音声モデルを準備中 " + (i + 1) + "/3";
-                    string source = Application.streamingAssetsPath + "/Speech/" + SpeechModels.Files[i];
+                    Status = ModelName + " 準備中 " + (i + 1) + "/" + files.Length;
+                    string source = Application.streamingAssetsPath + "/Speech/" + files[i];
                     if (!source.Contains("://")) source = new Uri(source).AbsoluteUri;
                     string temporary = destination + ".part";
                     copying = UnityWebRequest.Get(source);
@@ -91,11 +121,12 @@ namespace Koekatamarin
                     try { if (File.Exists(destination)) File.Delete(destination); File.Move(temporary, destination); }
                     catch (Exception e) { Fail("音声モデルの保存に失敗: " + e.Message); yield break; }
                 }
-                try { recognizer = new LocalSpeechRecognizer(target); }
+                try { workerModel = Model; recognizer = new LocalSpeechRecognizer(target, Model); }
                 catch (Exception e) { Fail("音声認識を開始できません: " + e.Message); yield break; }
             }
             while (!recognizer.Ready && recognizer.Error == null) { Status = recognizer.State; yield return null; }
             if (recognizer.Error != null) { Fail("音声認識エラー: " + recognizer.Error); yield break; }
+            while (applicationPaused) yield return null;
             if (!requested || !isActiveAndEnabled) yield break;
             if (Microphone.devices.Length == 0) { Fail("マイクが見つかりません"); yield break; }
             try { clip = Microphone.Start(null, true, 2, 16000); }
@@ -148,7 +179,7 @@ namespace Koekatamarin
                 lastText = result.Text;
                 FinalTranscript?.Invoke(result.Text);
                 Debug.Log("ASR completed: audio=" + result.AudioSeconds.ToString("F2") +
-                    "s decode=" + result.DecodeSeconds.ToString("F2") + "s"); // Do not log the user's speech.
+                    "s decode=" + result.DecodeSeconds.ToString("F2") + "s model=" + ModelName); // Do not log the user's speech.
             }
             string preview = lastText.Length > 18 ? lastText.Substring(0, 18) + "…" : lastText;
             Status = recognizer.State + (preview.Length > 0 ? " / " + preview : "");
@@ -159,6 +190,7 @@ namespace Koekatamarin
 
         public void Stop()
         {
+            resumeAfterPause = false;
             requested = false; requestId++;
             StopAllCoroutines();
             if (copying != null) { copying.Abort(); copying.Dispose(); copying = null; }
@@ -170,7 +202,14 @@ namespace Koekatamarin
             Stopped?.Invoke();
         }
 
-        void OnApplicationPause(bool pause) { if (pause) Stop(); }
+        void OnApplicationPause(bool pause)
+        {
+            applicationPaused = pause;
+            // Keep pending permission callbacks/model preparation alive while the permission
+            // dialog temporarily pauses the app. StartCapture waits for foreground before recording.
+            if (pause && clip != null) { bool resume = requested; Stop(); resumeAfterPause = resume; }
+            else if (!pause && resumeAfterPause) { resumeAfterPause = false; StartListening(); }
+        }
         void OnDisable() { Stop(); }
         void OnDestroy() { recognizer?.Dispose(); }
     }

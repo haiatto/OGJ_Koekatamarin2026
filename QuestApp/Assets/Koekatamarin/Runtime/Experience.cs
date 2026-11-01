@@ -13,6 +13,9 @@ namespace Koekatamarin
         public Material panelMaterial;
         public Material beamMaterial;
         public LegacyEnvironment environment;
+        public HandControls hands;
+        public RoomCollision roomCollision;
+        readonly PlayerMotion motion = new PlayerMotion();
         public bool IsMixedReality => mr;
         public bool IsSwitching => switching;
         readonly string[] samples = { "こんにちは！", "声が文字になる", "コエカタマリン", "おはよう", "ありがとう", "わあああ！" };
@@ -38,6 +41,7 @@ namespace Koekatamarin
         TextMeshPro roomLabel;
         TextMeshPro modeLabel;
         TextMeshPro alignmentLabel;
+        TextMeshPro modelLabel;
         LineRenderer beam;
         Transform originMarker;
         LineRenderer directionMarker;
@@ -56,6 +60,8 @@ namespace Koekatamarin
         IEnumerator Start()
         {
             Application.targetFrameRate = 72;
+            // Words collide with each other and scanned geometry, never the UI/controller layer.
+            Physics.IgnoreLayerCollision(8, 0, true);
             network = gameObject.AddComponent<LanPeer>();
             speech = gameObject.AddComponent<SpeechInput>();
             speech.FinalTranscript += SubmitFinalTranscript;
@@ -87,6 +93,10 @@ namespace Koekatamarin
             yield return null;
             PlacePanel();
             BeginMrBoundaryRequest();
+#if !UNITY_EDITOR
+            speech.StartListening();
+            if (roomCollision != null) StartCoroutine(roomCollision.LoadAfterMicrophone(speech));
+#endif
         }
 
         void ConfigureCamera(bool isMr)
@@ -131,7 +141,7 @@ namespace Koekatamarin
         void BuildPanel()
         {
             panel = new GameObject("Control panel").transform;
-            panel.SetParent(transform);
+            panel.SetParent(rig.transform);
             mainControls = new GameObject("Main controls").transform;
             mainControls.SetParent(panel, false);
             Label(panel, "コエカタマリン 2026", new Vector3(0, .33f, 0), .65f, new Vector2(1.2f, .12f));
@@ -148,8 +158,13 @@ namespace Koekatamarin
             Button("次のことば", new Vector3(.18f, -.16f, 0), () => { sampleIndex = (sampleIndex + 1) % samples.Length; });
             alignmentLabel = Button("位置合わせ", new Vector3(-.18f, -.29f, 0), BeginAlignment);
             Button("位置を解除", new Vector3(.18f, -.29f, 0), InvalidateAlignment);
-            Button("IPで接続", new Vector3(0, -.42f, 0), ShowAddressPanel);
-            status = Label(mainControls, "準備中", new Vector3(0, -.70f, -.02f), .28f, new Vector2(1.4f, .4f));
+            Button("IPで接続", new Vector3(-.18f, -.42f, 0), ShowAddressPanel);
+            modelLabel = Button("ReazonSpeech", new Vector3(.18f, -.42f, 0), () => speech.NextModel());
+            Button("目印を確定", new Vector3(-.18f, -.55f, 0), CaptureAlignment);
+            Button("部屋読込", new Vector3(.18f, -.55f, 0), () => roomCollision?.RequestLoad());
+            Button("左へ30度", new Vector3(-.18f, -.68f, 0), () => TurnFromPanel(-1));
+            Button("右へ30度", new Vector3(.18f, -.68f, 0), () => TurnFromPanel(1));
+            status = Label(mainControls, "準備中", new Vector3(0, -.98f, -.02f), .26f, new Vector2(1.4f, .45f));
             status.textWrappingMode = TextWrappingModes.Normal;
             BuildAddressPanel();
         }
@@ -239,7 +254,7 @@ namespace Koekatamarin
         {
             var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             marker.name = "Shared origin A";
-            Destroy(marker.GetComponent<Collider>());
+            Destroy(marker.GetComponent<SphereCollider>());
             marker.GetComponent<Renderer>().sharedMaterial = beamMaterial;
             originMarker = marker.transform;
             originMarker.SetParent(transform);
@@ -258,15 +273,16 @@ namespace Koekatamarin
             if (!mr || switching) { feedback = "位置合わせはMRモードで行います"; return; }
             InvalidateAlignment();
             sharedSpace.Begin();
-            feedback = "全員共通の目印Aに右コントローラーを置き右グリップ";
+            feedback = "共通の目印Aに右手を置き「目印を確定」/ 右グリップ";
         }
 
         void CaptureAlignment()
         {
             if (!sharedSpace.Capturing || !mr || switching) return;
-            if (!OVRInput.GetControllerPositionTracked(OVRInput.Controller.RTouch))
+            bool trackedHand = hands != null && hands.right != null && hands.right.IsDataHighConfidence;
+            if (!trackedHand && !OVRInput.GetControllerPositionTracked(OVRInput.Controller.RTouch))
             { feedback = "右コントローラーの位置が追跡できません"; return; }
-            sharedSpace.Capture(rig.rightHandAnchor.position, out feedback);
+            sharedSpace.Capture(trackedHand ? hands.right.transform.position : rig.rightHandAnchor.position, out feedback);
             network.SharedSpaceReady = sharedSpace.Ready;
         }
 
@@ -319,6 +335,8 @@ namespace Koekatamarin
                 {
                     InvalidateAlignment();
                     mr = false;
+                    motion.Enter(rig.transform);
+                    roomCollision?.SetMixedReality(false);
                     passthrough.enabled = false;
                     manager.isInsightPassthroughEnabled = false;
                     ConfigureCamera(false);
@@ -329,6 +347,9 @@ namespace Koekatamarin
             }
             else
             {
+                motion.Exit(rig.transform);
+                InvalidateAlignment();
+                roomCollision?.SetMixedReality(true);
                 manager.isInsightPassthroughEnabled = true;
                 passthrough.enabled = true;
                 ConfigureCamera(true);
@@ -339,6 +360,13 @@ namespace Koekatamarin
             switching = false;
             modeTransition = null;
             if (mr) BeginMrBoundaryRequest();
+            PlacePanel();
+        }
+
+        void TurnFromPanel(float direction)
+        {
+            if (mr || switching || applicationPaused) return;
+            rig.transform.RotateAround(rig.centerEyeAnchor.position, Vector3.up, direction * 30);
         }
 
         void Update()
@@ -348,6 +376,18 @@ namespace Koekatamarin
                 manager.shouldBoundaryVisibilityBeSuppressed = true;
             bool pressed = OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch);
             var ray = new Ray(rig.rightHandAnchor.position, rig.rightHandAnchor.forward);
+            bool allowedMotion = !mr && !switching && !applicationPaused && OVRManager.hasInputFocus;
+            if (hands != null)
+            {
+                hands.Sample(allowedMotion);
+                if (hands.HasPointer) { ray = hands.Ray; pressed = hands.Click; }
+                if (hands.Recall) PlacePanel();
+            }
+            Vector2 move = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
+            if (hands != null && hands.Move.sqrMagnitude > 0) move = hands.Move;
+            motion.Step(rig.transform, rig.centerEyeAnchor, move,
+                OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch).x,
+                Time.unscaledDeltaTime, allowedMotion);
             if (!OVRManager.isHmdPresent)
             {
                 if (Mouse.current != null)
@@ -367,7 +407,7 @@ namespace Koekatamarin
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch)) SetPanelVisible(!panel.gameObject.activeSelf);
             if (OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger, OVRInput.Controller.RTouch)) CaptureAlignment();
             UpdateAlignmentMarkers();
-            bool hit = Physics.Raycast(ray, out var result, 5);
+            bool hit = Physics.Raycast(ray, out var result, 5, ~((1 << 8) | (1 << 9)));
             beam.SetPosition(0, ray.origin);
             beam.SetPosition(1, hit ? result.point : ray.GetPoint(3));
             if (pressed)
@@ -381,9 +421,10 @@ namespace Koekatamarin
                 nextStatus = Time.unscaledTime + .2f;
                 status.text = samples[sampleIndex] + "\n" +
                     (network.Connected ? "部屋 " + room + " / 相手 " + network.PeerCount + "台 / 未達 " + network.MissedDeliveries : network.Status) +
-                    "\n" + speech.Status + "  " + speech.Level.ToString("F3") +
+                    "\n" + speech.ModelName + ": " + speech.Status + "  " + speech.Level.ToString("F3") +
                     "\n" + (sharedSpace.Ready ? "位置合わせ済 / 相手 " + network.AlignedPeerCount + "台" : "相手の文字は手前に表示") +
-                    "\n" + BoundaryStatus() + "\n" + feedback;
+                    "\n" + BoundaryStatus() + " / " + (roomCollision != null ? roomCollision.Status : "") + "\n" + feedback;
+                modelLabel.text = speech.ModelName + " →";
                 addressStatus.text = network.Status + "\n相手 " + network.PeerCount + "台 / 戻ると通常の操作画面";
                 modeLabel.text = switching ? "切替中" : (mr ? "MR → VR" : "VR → MR");
                 alignmentLabel.text = sharedSpace.Capturing ? "やり直す" : sharedSpace.Ready ? "位置合わせ済" : "位置合わせ";
@@ -421,6 +462,7 @@ namespace Koekatamarin
         Pose PersonalPose(bool remote)
         {
             var head = rig.centerEyeAnchor;
+            if (!remote) return PlayerMotion.VoicePose(head.position, head.rotation);
             var yaw = Quaternion.Euler(0, head.eulerAngles.y, 0);
             Vector3 offset = new Vector3(remote ? -.45f : .45f, -.1f, .6f);
             return new Pose(head.position + yaw * offset, yaw);

@@ -22,6 +22,16 @@ namespace Koekatamarin.Editor
         public static void Begin()
         {
             EditorSceneManager.OpenScene("Assets/Koekatamarin/Generated/Playground.unity");
+            // Desktop previews have no XR runtime. Remove device-only native components from
+            // this unsaved preview scene before Play; the saved Android scene stays intact.
+            var experience = Object.FindAnyObjectByType<Experience>();
+            if (experience.roomCollision != null) Object.DestroyImmediate(experience.roomCollision.gameObject);
+            if (experience.hands != null)
+            {
+                Object.DestroyImmediate(experience.hands.left.gameObject);
+                Object.DestroyImmediate(experience.hands.right.gameObject);
+                Object.DestroyImmediate(experience.hands);
+            }
             SessionState.SetBool("Koekatamarin.Preview", true);
             started = EditorApplication.timeSinceStartup;
             EditorApplication.update += Tick;
@@ -66,7 +76,7 @@ namespace Koekatamarin.Editor
                 {
                     // A documentation preview must not publish the workstation's real interface addresses.
                     experience.ShowAddressPanel("192.168.1.10（表示例）");
-                    var controls = experience.transform.Find("Control panel/IP address controls");
+                    var controls = experience.rig.transform.Find("Control panel/IP address controls");
                     foreach (char digit in "192.168.1.20") controls.Find(digit.ToString()).GetComponent<PanelAction>().Invoke();
                     controls.Find("消す").GetComponent<PanelAction>().Invoke();
                     controls.Find("0").GetComponent<PanelAction>().Invoke();
@@ -102,9 +112,9 @@ namespace Koekatamarin.Editor
             Object.DestroyImmediate(render);
             if (ip)
             {
-                var controls = experience.transform.Find("Control panel/IP address controls");
+                var controls = experience.rig.transform.Find("Control panel/IP address controls");
                 controls.Find("戻る").GetComponent<PanelAction>().Invoke();
-                if (controls.gameObject.activeSelf || !experience.transform.Find("Control panel/Main controls").gameObject.activeSelf)
+                if (controls.gameObject.activeSelf || !experience.rig.transform.Find("Control panel/Main controls").gameObject.activeSelf)
                     throw new System.InvalidOperationException("IP keypad did not return to normal controls");
                 Debug.Log("KOEKATAMARIN_IP_KEYPAD_OK (Editor input; no device network validation)");
             }

@@ -1,3 +1,5 @@
+> 2026-11-02更新: 0.6.0ではReazonSpeech k2-v2とSenseVoiceを同梱し、パネルから切替可能です。Quest起動時はReazonSpeech・音声ON。操作と設定は[0.6.0の説明](modern-controls.ja.md)を参照してください。以下はSenseVoice導入時点の設計記録です。0.5.0ではQuest実機でパネル・音声からの文字表示を確認済みですが、ユーザーから認識精度が低いという評価があり、ReazonSpeechを比較対象に追加しています。
+
 # 端末内の日本語音声認識
 
 2026-11-01、SenseVoice Small INT8とSilero VADを組み込みました。話し終えた短い発話を文字にして発射します。クラウドAPI、従量課金、音声アップロードはありません。Quest実機のマイク・速度・精度・発熱は未検証です。

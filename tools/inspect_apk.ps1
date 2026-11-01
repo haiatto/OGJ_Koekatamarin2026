@@ -16,7 +16,9 @@ if ($LASTEXITCODE -ne 0) { throw 'APK manifest could not be read' }
 $manifestText = $manifest -join "`n"
 foreach ($required in @('com.haiatto.koekatamarin2026', 'android.permission.INTERNET',
     'android.permission.RECORD_AUDIO', 'android.permission.CHANGE_WIFI_MULTICAST_STATE',
-    'com.oculus.permission.BOUNDARY_VISIBILITY', 'com.oculus.feature.PASSTHROUGH', 'com.oculus.intent.category.VR')) {
+    'com.oculus.permission.BOUNDARY_VISIBILITY', 'com.oculus.permission.HAND_TRACKING',
+    'com.oculus.permission.USE_SCENE', 'com.oculus.permission.USE_ANCHOR_API',
+    'com.oculus.feature.PASSTHROUGH', 'com.oculus.intent.category.VR')) {
     if (!$manifestText.Contains($required)) { throw "Manifest entry missing: $required" }
 }
 if ($manifestText.Contains('BOUNDARYLESS_APP')) { throw 'Always-boundaryless manifest conflicts with optional VR mode' }
@@ -26,6 +28,7 @@ try {
     $native = @($zip.Entries | Where-Object { $_.FullName -match '^lib/.+\.so$' } | ForEach-Object { $_.FullName })
     if (!($native -contains 'lib/arm64-v8a/libil2cpp.so')) { throw 'ARM64 IL2CPP binary missing' }
     if (!($native -contains 'lib/arm64-v8a/libOVRPlugin.so')) { throw 'Android Meta XR native plugin missing' }
+    if (!($native -contains 'lib/arm64-v8a/libmrutilitykitshared.so')) { throw 'Android MR Utility Kit native plugin missing' }
     foreach ($library in @('libonnxruntime.so', 'libsherpa-onnx-c-api.so')) {
         if (!($native -contains ('lib/arm64-v8a/' + $library))) { throw "Offline ASR binary missing: $library" }
     }
@@ -34,6 +37,10 @@ try {
         'model.int8.onnx' = 'c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51'
         'tokens.txt' = 'f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc'
         'silero_vad.onnx' = '9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6'
+        'Reazon/encoder-epoch-99-avg-1.int8.onnx' = '2c7bd08a8a99f9ddd0d9e458456577b1f6279214e51426f114f9eced44c54e1d'
+        'Reazon/decoder-epoch-99-avg-1.onnx' = '58b18211ae06265466bfa17172dab574df94f76c8bcb61a3640c28ba860e4124'
+        'Reazon/joiner-epoch-99-avg-1.int8.onnx' = '49cc7ea1d3d35a40a27442db5e89996da64bf0e683a903dce76e99e57a12e4de'
+        'Reazon/tokens.txt' = '2c3ac659818a48a0c04010e0593bbc4d7c8a24a054340b01131499c05fd52def'
     }
     foreach ($name in $speechHashes.Keys) {
         $entry = $zip.GetEntry('assets/Speech/' + $name)
@@ -45,7 +52,7 @@ try {
         if ($digest -ne $speechHashes[$name]) { throw "Bundled speech model hash mismatch: $name" }
     }
     foreach ($notice in @('ATTRIBUTION.txt', 'FunASR-MODEL-LICENSE.txt', 'Silero-VAD-LICENSE.txt',
-        'sherpa-onnx-LICENSE.txt', 'ONNX-Runtime-LICENSE.txt', 'ONNX-Runtime-ThirdPartyNotices.txt')) {
+        'sherpa-onnx-LICENSE.txt', 'ONNX-Runtime-LICENSE.txt', 'ONNX-Runtime-ThirdPartyNotices.txt', 'ReazonSpeech-LICENSE.txt')) {
         if (!$zip.GetEntry('assets/Speech/Notices/' + $notice)) { throw "Speech license missing: $notice" }
     }
 }

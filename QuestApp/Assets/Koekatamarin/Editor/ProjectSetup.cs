@@ -15,6 +15,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
+using Meta.XR.MRUtilityKit;
 
 namespace Koekatamarin.Editor
 {
@@ -43,8 +44,8 @@ namespace Koekatamarin.Editor
             PlayerSettings.companyName = "haiatto";
             PlayerSettings.productName = "Koekatamarin 2026";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.haiatto.koekatamarin2026");
-            PlayerSettings.bundleVersion = "0.5.0";
-            PlayerSettings.Android.bundleVersionCode = 5;
+            PlayerSettings.bundleVersion = "0.6.0";
+            PlayerSettings.Android.bundleVersionCode = 6;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel32;
@@ -64,7 +65,9 @@ namespace Koekatamarin.Editor
             config.targetDeviceTypes = new System.Collections.Generic.List<OVRProjectConfig.DeviceType> { OVRProjectConfig.DeviceType.Quest3 };
             config.insightPassthroughSupport = OVRProjectConfig.FeatureSupport.Supported;
             config.boundaryVisibilitySupport = OVRProjectConfig.FeatureSupport.Supported;
-            config.handTrackingSupport = OVRProjectConfig.HandTrackingSupport.ControllersOnly;
+            config.handTrackingSupport = OVRProjectConfig.HandTrackingSupport.ControllersAndHands;
+            config.sceneSupport = OVRProjectConfig.FeatureSupport.Supported;
+            config.anchorSupport = OVRProjectConfig.AnchorSupport.Enabled;
             OVRProjectConfig.CommitProjectConfig(config);
             ConfigureXR();
             ConfigureRendering();
@@ -95,6 +98,22 @@ namespace Koekatamarin.Editor
             var app = new GameObject("Koekatamarin").AddComponent<Experience>();
             app.rig = rig; app.font = font; app.panelMaterial = panel; app.beamMaterial = beam;
             app.environment = LegacyEnvironmentSetup.Create();
+            var hands = app.gameObject.AddComponent<HandControls>();
+            hands.head = rig.centerEyeAnchor;
+            hands.left = CreateHand(rig, true, beam);
+            hands.right = CreateHand(rig, false, beam);
+            app.hands = hands;
+            var roomObject = new GameObject("Physical room");
+            var mruk = roomObject.AddComponent<MRUK>();
+            mruk.SceneSettings = new MRUK.MRUKSettings { LoadSceneOnStartup = false };
+            mruk.EnableWorldLock = false; // Keep rig motion exclusively owned by PlayerMotion.
+            var effect = roomObject.AddComponent<EffectMesh>();
+            effect.SpawnOnStart = MRUK.RoomFilter.None;
+            effect.Colliders = true; effect.HideMesh = true; effect.Layer = 9;
+            effect.MeshMaterial = panel;
+            var roomCollision = roomObject.AddComponent<RoomCollision>();
+            roomCollision.scene = mruk; roomCollision.mesh = effect;
+            app.roomCollision = roomCollision;
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
@@ -112,6 +131,32 @@ namespace Koekatamarin.Editor
             }
             material.SetColor("_BaseColor", color);
             return material;
+        }
+
+        static OVRHand CreateHand(OVRCameraRig rig, bool left, Material material)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Packages/com.meta.xr.sdk.core/Prefabs/OVRHandPrefab.prefab");
+            var handObject = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            handObject.name = left ? "Tracked left hand" : "Tracked right hand";
+            handObject.transform.SetParent(left ? rig.leftHandAnchor : rig.rightHandAnchor, false);
+            var hand = handObject.GetComponent<OVRHand>();
+            var serialized = new SerializedObject(hand);
+            serialized.FindProperty("HandType").intValue = left ? 0 : 1;
+            serialized.FindProperty("_pointerPoseRoot").objectReferenceValue = rig.trackingSpace;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            bool openXrHands = OVRRuntimeSettings.Instance.HandSkeletonVersion == OVRHandSkeletonVersion.OpenXR;
+            var skeleton = new SerializedObject(handObject.GetComponent<OVRSkeleton>());
+            skeleton.FindProperty("_skeletonType").intValue = (int)(openXrHands ?
+                (left ? OVRSkeleton.SkeletonType.XRHandLeft : OVRSkeleton.SkeletonType.XRHandRight) :
+                (left ? OVRSkeleton.SkeletonType.HandLeft : OVRSkeleton.SkeletonType.HandRight));
+            skeleton.ApplyModifiedPropertiesWithoutUndo();
+            var mesh = new SerializedObject(handObject.GetComponent<OVRMesh>());
+            mesh.FindProperty("_meshType").intValue = (int)(openXrHands ?
+                (left ? OVRMesh.MeshType.XRHandLeft : OVRMesh.MeshType.XRHandRight) :
+                (left ? OVRMesh.MeshType.HandLeft : OVRMesh.MeshType.HandRight));
+            mesh.ApplyModifiedPropertiesWithoutUndo();
+            handObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial = material;
+            return hand;
         }
 
         static void ConfigureRendering()

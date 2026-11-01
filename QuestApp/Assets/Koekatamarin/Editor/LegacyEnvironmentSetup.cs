@@ -62,7 +62,7 @@ namespace Koekatamarin.Editor
             ground.transform.SetParent(environment.transform, false);
             ground.transform.localPosition = new Vector3(0, -.13f, -25);
             ground.transform.localScale = new Vector3(220, .2f, 64); // front edge z=7
-            UnityEngine.Object.DestroyImmediate(ground.GetComponent<Collider>());
+            ground.layer = 9;
             ground.GetComponent<MeshRenderer>().sharedMaterial = sand;
             ground.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
 
@@ -75,6 +75,8 @@ namespace Koekatamarin.Editor
             if (existing == null) AssetDatabase.CreateAsset(mesh, meshPath);
             else { EditorUtility.CopySerialized(mesh, existing); UnityEngine.Object.DestroyImmediate(mesh); mesh = existing; }
             oceanObject.GetComponent<MeshFilter>().sharedMesh = mesh;
+            oceanObject.layer = 9;
+            oceanObject.AddComponent<MeshCollider>().sharedMesh = mesh;
             oceanObject.GetComponent<MeshRenderer>().sharedMaterial = water;
             oceanObject.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
             EditorUtility.SetDirty(skyMaterial); EditorUtility.SetDirty(sand); EditorUtility.SetDirty(water);

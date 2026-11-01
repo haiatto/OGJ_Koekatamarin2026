@@ -26,6 +26,7 @@ namespace Koekatamarin
         readonly Queue<Result> results = new Queue<Result>();
         readonly Thread thread;
         readonly string directory;
+        readonly SpeechModels.Model model;
         int generation;
         bool stopping;
         public volatile bool Ready;
@@ -37,10 +38,11 @@ namespace Koekatamarin
         [DllImport("onnxruntime", CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr OrtGetApiBase();
 
-        public LocalSpeechRecognizer(string directory)
+        public LocalSpeechRecognizer(string directory, SpeechModels.Model model = SpeechModels.Model.SenseVoice)
         {
             SpeechNativeLoader.PrepareEditor();
             this.directory = directory;
+            this.model = model;
             thread = new Thread(Run) { IsBackground = true, Name = "Koekatamarin Japanese ASR" };
             thread.Start();
         }
@@ -82,10 +84,22 @@ namespace Koekatamarin
                 // Load the dependency through Unity's plugin resolver before loading the C API.
                 if (OrtGetApiBase() == IntPtr.Zero) throw new InvalidOperationException("ONNX Runtime unavailable");
                 var config = new OfflineRecognizerConfig(true);
-                config.ModelConfig.SenseVoice.Model = Path.Combine(directory, SpeechModels.Files[0]);
-                config.ModelConfig.SenseVoice.Language = "ja";
-                config.ModelConfig.SenseVoice.UseInverseTextNormalization = 1;
-                config.ModelConfig.Tokens = Path.Combine(directory, SpeechModels.Files[1]);
+                if (model == SpeechModels.Model.ReazonSpeech)
+                {
+                    config.ModelConfig.Transducer.Encoder = Path.Combine(directory, SpeechModels.ReazonFiles[0]);
+                    config.ModelConfig.Transducer.Decoder = Path.Combine(directory, SpeechModels.ReazonFiles[1]);
+                    config.ModelConfig.Transducer.Joiner = Path.Combine(directory, SpeechModels.ReazonFiles[2]);
+                    config.ModelConfig.Tokens = Path.Combine(directory, SpeechModels.ReazonFiles[3]);
+                    config.DecodingMethod = "modified_beam_search";
+                    config.MaxActivePaths = 4;
+                }
+                else
+                {
+                    config.ModelConfig.SenseVoice.Model = Path.Combine(directory, SpeechModels.Files[0]);
+                    config.ModelConfig.SenseVoice.Language = "ja";
+                    config.ModelConfig.SenseVoice.UseInverseTextNormalization = 1;
+                    config.ModelConfig.Tokens = Path.Combine(directory, SpeechModels.Files[1]);
+                }
                 config.ModelConfig.NumThreads = 2;
                 using var recognizer = new OfflineRecognizer(config);
                 var vadConfig = new VadModelConfig(true);
