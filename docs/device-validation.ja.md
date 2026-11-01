@@ -4,6 +4,8 @@
 
 ## 0.6.0の導入
 
+2026-11-02、ユーザーから「ReazonSpeechで文字が出る」と確認を得ました。Quest 3で発話から文字表示までの動作を確認済みです。SenseVoiceとの認識精度の比較はまだ行っていません。
+
 2026-11-02、Wi-FiのADB経由で0.6.0を `adb install -r` により導入しました。導入済みパッケージのversionCode 6 / versionName 0.6.0と、Activityの起動成功を確認しています。APKのSHA-256は `acbad92c56aa72dfcf4862a5307d4680a4fb3a6876466ea5d822bea3fa055ddf` です。
 
 新機能は[0.6.0の操作](modern-controls.ja.md)を参照してください。音声は起動時ON、初期モデルはReazonSpeechで、SenseVoiceへ切り替えられます。空間データの許可と部屋設定が必要です。導入・起動成功だけでは、ReazonSpeechの認識精度、手追跡、VR移動、部屋への衝突の実機合格とはしません。

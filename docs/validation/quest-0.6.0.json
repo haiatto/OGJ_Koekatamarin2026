@@ -56,6 +56,8 @@
   "installedVersionCodeVerified": 6,
   "deviceValidationScope": "Wi-Fi ADB install, package version, activity launch and app process confirmed. Per-feature hardware tests remain separate; deviceTested is not an all-features pass.",
   "deviceReazonInferenceObserved": true,
+  "deviceReazonTextDisplayUserConfirmed": true,
+  "deviceReazonTextDisplayConfirmationDate": "2026-11-02",
   "deviceRoomMeshColliderCreated": true,
   "deviceBoundaryInvisibleEventObserved": true,
   "deviceSpeechSamples": {
