@@ -57,7 +57,7 @@
   "proprietaryHgFontInQuestApp": false,
   "deviceInstalled": true,
   "deviceLaunchSucceeded": true,
-  "deviceFontSwitchUserConfirmed": false,
+  "deviceFontSwitchUserConfirmed": true,
   "deviceWaterStereoVerified": false,
   "deviceLanTested": false,
   "deviceSpatialAlignmentVerified": false,
@@ -66,12 +66,14 @@
   "lanProtocolVersion": 2,
   "installedVersionCodeVerified": 7,
   "deviceReazonInferenceObserved": true,
-  "deviceValidationScope": "Wi-Fi ADB install, versionName 0.7.0/versionCode 7, cold activity launch, app process and one ReazonSpeech decode confirmed. Font switch appearance, stereo water and sustained performance require user/device validation.",
+  "deviceValidationScope": "Wi-Fi ADB install, versionName 0.7.0/versionCode 7, cold activity launch, app process and one ReazonSpeech decode confirmed. User confirmed switching and text display for all three fonts on Quest 3. Stereo water and sustained performance require device validation.",
   "deviceSpeechSamples": {
     "model": "ReazonSpeech",
     "sampleCount": 1,
     "decodeSeconds": [
       0.07
     ]
-  }
+  },
+  "deviceFontSwitchUserConfirmedDate": "2026-11-02",
+  "deviceFontSwitchUserConfirmationScope": "User confirmed all three fonts (Mikachan-PB, LightNovelPOP, Noto Sans JP) switch and display text on Quest 3."
 }

@@ -105,6 +105,6 @@ python -m unittest discover -s tools -p test_quest_device.py -v
 
 ## 0.7.0 導入記録（2026-11-02）
 
-無線ADBで更新インストールし、versionName 0.7.0 / versionCode 7 とコールド起動の成功、アプリプロセスの継続を確認しました。ReazonSpeechの認識処理1件（処理時間0.07秒）がログにあります。文字の表示・書体切替はユーザーの実機確認待ちです。VRのWater4左右反射と持続性能は未検証です。
+無線ADBで更新インストールし、versionName 0.7.0 / versionCode 7 とコールド起動の成功、アプリプロセスの継続を確認しました。ReazonSpeechの認識処理1件（処理時間0.07秒）がログにあります。同日、ユーザーがQuest 3で「みかちゃん-PB／ラノベPOP／Noto Sans JP」の3書体すべてを切り替え、文字が表示されることを確認しました。VRのWater4左右反射と持続性能は未検証です。
 
 [APK検査結果](validation/quest-0.7.0.json)、[表現の移植範囲と書体切替](legacy-appearance-port.ja.md)。Rawログは公開せずローカルの `.work/quest-device/` に保存します。

@@ -8,7 +8,7 @@
 
 ## 現在の状態
 
-**0.7.0では、原作のTextMesh構造とWater4シェーダーを移植し、無料フォントの切替を追加しています。** 新規Unityプロジェクトは `QuestApp/` です。「みかちゃん-PB」「ラノベPOP」「Noto Sans JP」を選択できます。HG創英角ポップ体は新版に同梱しません。[表現の移植範囲とフォントの利用条件](docs/legacy-appearance-port.ja.md)に、原作と一致させた部分・変更した部分・未検証部分を記録しています。44件の自動テスト、3書体のEditor描画・切替、VR/MR往復を確認し、0.7.0のAPKを生成してQuest 3へ導入・起動しました。実機での書体切替と海の左右表示は確認待ちです。出力は `QuestApp/Builds/Koekatamarin2026.apk`（約510 MB）です。[検査結果](docs/validation/quest-0.7.0.json)。
+**0.7.0では、原作のTextMesh構造とWater4シェーダーを移植し、無料フォントの切替を追加しています。** 新規Unityプロジェクトは `QuestApp/` です。「みかちゃん-PB」「ラノベPOP」「Noto Sans JP」を選択できます。HG創英角ポップ体は新版に同梱しません。[表現の移植範囲とフォントの利用条件](docs/legacy-appearance-port.ja.md)に、原作と一致させた部分・変更した部分・未検証部分を記録しています。44件の自動テスト、3書体のEditor描画・切替、VR/MR往復を確認し、0.7.0のAPKを生成してQuest 3へ導入・起動しました。Quest 3で3書体すべての切替と文字表示をユーザー確認済みです（2026-11-02）。海の左右表示は確認待ちです。出力は `QuestApp/Builds/Koekatamarin2026.apk`（約510 MB）です。[検査結果](docs/validation/quest-0.7.0.json)。
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
