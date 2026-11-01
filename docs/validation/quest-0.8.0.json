@@ -74,7 +74,7 @@
   },
   "deviceInstalled": true,
   "deviceLaunchSucceeded": true,
-  "deviceInterimUserConfirmed": false,
+  "deviceInterimUserConfirmed": true,
   "deviceWaterStereoVerified": false,
   "deviceLanTested": false,
   "deviceSpatialAlignmentVerified": false,
@@ -88,7 +88,7 @@
   ],
   "installedVersionCodeVerified": 8,
   "deviceReazonInterimInferenceObserved": true,
-  "deviceValidationScope": "Wi-Fi ADB update install, versionName 0.8.0/versionCode 8, cold activity launch, continuing process and two ReazonSpeech interim updates observed. This does not confirm intended speech content, on-screen emission timing, noise behavior or sustained performance.",
+  "deviceValidationScope": "Wi-Fi ADB update install, versionName 0.8.0/versionCode 8, cold activity launch, continuing process and two ReazonSpeech interim updates observed. User confirmed on-screen text emission while still speaking. Transcript accuracy, exact latency, noise behavior, long-context boundaries and sustained performance remain unverified.",
   "deviceSpeechSamples": {
     "model": "ReazonSpeech",
     "sampleCount": 2,
@@ -104,5 +104,7 @@
   "deviceLogNotes": [
     "No E Unity lines in captured app log.",
     "OVRMetricsToolClient reported NumberFormatException for 0-stub, also observed in the previous build; not counted as an ASR exception."
-  ]
+  ],
+  "deviceInterimUserConfirmedDate": "2026-11-02",
+  "deviceInterimUserConfirmationScope": "User confirmed that text is emitted while still speaking on Quest 3 with 0.8.0. Silence/noise behavior, exact latency, long-context boundary accuracy and sustained performance were not confirmed."
 }
