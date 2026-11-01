@@ -40,7 +40,9 @@ namespace Koekatamarin.Editor
             sand.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(Art + "Sand_Pattern.jpg"));
             sand.SetTextureScale("_BaseMap", new Vector2(30, 18));
             sand.SetColor("_BaseColor", new Color(.65f, .35f, .17f));
-            var water = Material("SunsetOcean", "Koekatamarin/Sunset Ocean");
+            var water = Material("SunsetOcean", "Koekatamarin/Water4 Port");
+            water.shader = Shader.Find("Koekatamarin/Water4 Port");
+            LegacyAppearanceSetup.ApplyWater(water);
 
             var environment = new GameObject("Legacy sunset beach (VR only)").AddComponent<LegacyEnvironment>();
             environment.ocean = water;
@@ -60,15 +62,18 @@ namespace Koekatamarin.Editor
             var ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
             ground.name = "Sand beach";
             ground.transform.SetParent(environment.transform, false);
-            ground.transform.localPosition = new Vector3(0, -.13f, -25);
-            ground.transform.localScale = new Vector3(220, .2f, 64); // front edge z=7
+            // The shore depth gradient is part of Water4's edge blending, so retain the
+            // original ground geometry rather than the prototype's flat substitute.
+            ground.transform.localPosition = new Vector3(0, -.062579751f, -6.61979866f);
+            ground.transform.localRotation = new Quaternion(.0730102956f, 0, 0, .997331262f);
+            ground.transform.localScale = new Vector3(140, 1, 70);
             ground.layer = 9;
             ground.GetComponent<MeshRenderer>().sharedMaterial = sand;
             ground.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
 
             var oceanObject = new GameObject("Ocean", typeof(MeshFilter), typeof(MeshRenderer));
             oceanObject.transform.SetParent(environment.transform, false);
-            oceanObject.transform.localPosition = new Vector3(0, -.08f, 0);
+            oceanObject.transform.localPosition = Vector3.zero;
             var mesh = MakeOcean();
             string meshPath = Generated + "Ocean.asset";
             var existing = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
@@ -78,6 +83,7 @@ namespace Koekatamarin.Editor
             oceanObject.layer = 9;
             oceanObject.AddComponent<MeshCollider>().sharedMesh = mesh;
             oceanObject.GetComponent<MeshRenderer>().sharedMaterial = water;
+            oceanObject.AddComponent<Water4Reflection>().water = oceanObject.GetComponent<MeshRenderer>();
             oceanObject.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
             EditorUtility.SetDirty(skyMaterial); EditorUtility.SetDirty(sand); EditorUtility.SetDirty(water);
             environment.Hide();
@@ -99,23 +105,18 @@ namespace Koekatamarin.Editor
 
         static Mesh MakeOcean()
         {
-            const int width = 80, depth = 60;
-            var vertices = new Vector3[(width + 1) * (depth + 1)];
-            var triangles = new int[width * depth * 6];
-            for (int z = 0; z <= depth; z++)
-                for (int x = 0; x <= width; x++)
-                    vertices[z * (width + 1) + x] = new Vector3(Mathf.Lerp(-110, 110, x / (float)width), 0, Mathf.Lerp(7, 170, z / (float)depth));
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(Art + "ocean_plane.FBX");
+            var original = model.GetComponentInChildren<MeshFilter>().sharedMesh;
+            var tiles = new CombineInstance[6];
             int cursor = 0;
-            for (int z = 0; z < depth; z++)
-                for (int x = 0; x < width; x++)
-                {
-                    int a = z * (width + 1) + x, b = a + width + 1;
-                    triangles[cursor++] = a; triangles[cursor++] = b; triangles[cursor++] = a + 1;
-                    triangles[cursor++] = a + 1; triangles[cursor++] = b; triangles[cursor++] = b + 1;
-                }
-            var mesh = new Mesh { name = "Sunset ocean grid", vertices = vertices, triangles = triangles };
-            mesh.RecalculateNormals(); mesh.RecalculateBounds();
-            var bounds = mesh.bounds; bounds.Expand(.1f); mesh.bounds = bounds;
+            foreach (float x in new[] { -50f, 0f, 50f })
+                foreach (float z in new[] { 15f, 65f })
+                    tiles[cursor++] = new CombineInstance { mesh = original,
+                        transform = Matrix4x4.TRS(new Vector3(x,0,z),Quaternion.identity,Vector3.one * .5f) };
+            var mesh = new Mesh { name = "Original Water4 six tiles", indexFormat = IndexFormat.UInt32 };
+            mesh.CombineMeshes(tiles, true, true);
+            mesh.RecalculateBounds();
+            var bounds = mesh.bounds; bounds.Expand(4f); mesh.bounds = bounds;
             return mesh;
         }
     }

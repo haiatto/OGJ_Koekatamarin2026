@@ -105,6 +105,30 @@ namespace Koekatamarin.Editor
                 image.ReadPixels(new Rect(0, 0, 1440, 1000), 0, 0);
                 image.Apply();
                 File.WriteAllBytes("../.work/quest-preview-vr-scenery.png", image.EncodeToPNG());
+                string initialFont = experience.VoiceFontName;
+                for (int index = 0; index < experience.voiceFonts.Length; index++)
+                {
+                    camera.Render();
+                    RenderTexture.active = render;
+                    image.ReadPixels(new Rect(0, 0, 1440, 1000), 0, 0);
+                    image.Apply();
+                    File.WriteAllBytes("../.work/quest-preview-font-" + index + ".png", image.EncodeToPNG());
+                    experience.NextVoiceFont();
+                }
+                if (experience.VoiceFontName != initialFont)
+                    throw new System.InvalidOperationException("Font cycle did not return to original selection");
+                Debug.Log("KOEKATAMARIN_FONT_CYCLE_OK count=" + experience.voiceFonts.Length);
+                var reflection = experience.environment.GetComponentInChildren<Water4Reflection>();
+                if (reflection == null || reflection.RenderCount == 0 || reflection.LeftTexture == null || !reflection.LeftTexture.IsCreated())
+                    throw new System.InvalidOperationException("Water4 planar reflection did not render");
+                var target = reflection.LeftTexture;
+                RenderTexture.active = target;
+                var reflectionImage = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);
+                reflectionImage.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+                reflectionImage.Apply();
+                File.WriteAllBytes("../.work/quest-preview-water-reflection.png", reflectionImage.EncodeToPNG());
+                Object.DestroyImmediate(reflectionImage);
+                Debug.Log("KOEKATAMARIN_WATER4_REFLECTION_OK mono renders=" + reflection.RenderCount);
             }
             camera.targetTexture = null;
             RenderTexture.active = null;

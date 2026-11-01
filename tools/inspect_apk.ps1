@@ -55,6 +55,9 @@ try {
         'sherpa-onnx-LICENSE.txt', 'ONNX-Runtime-LICENSE.txt', 'ONNX-Runtime-ThirdPartyNotices.txt', 'ReazonSpeech-LICENSE.txt')) {
         if (!$zip.GetEntry('assets/Speech/Notices/' + $notice)) { throw "Speech license missing: $notice" }
     }
+    foreach ($notice in @('Mikachan-LICENSE.txt', 'LightNovelPOP-LICENSE.txt', 'NotoSans-LICENSE.txt')) {
+        if (!$zip.GetEntry('assets/Notices/' + $notice)) { throw "Font license missing: $notice" }
+    }
 }
 finally { $zip.Dispose() }
 $java = Join-Path $AndroidPlayer 'OpenJDK/bin/java.exe'
@@ -77,6 +80,7 @@ $report = [ordered]@{
     nativeLibraries = $native
     offlineSpeechModelHashes = $speechHashes
     speechLicensesBundled = $true
+    fontLicensesBundled = $true
     deviceTested = $false
 }
 $report | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath ($apkPath + '.json') -Encoding utf8

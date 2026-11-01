@@ -1,0 +1,57 @@
+みかちゃんフォント（みかちゃん-PB）
+著作権者: みかちゃん / Mikachan
+
+原作者の使用条件（openSUSEが保存した dl.html より）
+
+ここで公開するフォントはフリー(無料)です。けど著作権は放棄してませんよぉ
+フォントの使用による障害には一切責任を持ちません。
+
+禁止事項:
+フォントそのものを販売すること。(改変して販売することを含む)
+
+使用条件:
+個人使用/商用使用にかかわらず特に制限事項はありません。ご自由にお使い下さい。
+・再配布および転載自由です。
+・メディア掲載の場合お知らせ頂けるとうれしいです。
+・商用使用でのサンプル画像/写真頂ければ、「さくひんしょうかい」にて掲載します。
+
+原配布ページ: http://mikachan.sourceforge.jp/dl.html
+保存先: https://api.opensuse.org/public/source/M17N:fonts/mikachan-fonts/dl.html
+フォント取得先: https://api.opensuse.org/public/source/M17N:fonts/mikachan-fonts/mikachan-fonts.tar.bz2
+2026-11-02に確認。フォントバイナリは改変していません。
+
+Inofficial translation of http://mikachan.sourceforge.jp/dl.html
+
+(dl.html is also included as
+/usr/share/doc/packages/mikachan-fonts/dl.html)
+
+It's free. But I don't abandon the Copyright.
+
+I don't really think this applies to fonts but just in case:
+
+if any damage occurs while using the font I will not take
+responsibility.  (e.g. when you get angry when printing very important
+documents with the "mikachan" fonts).
+
+Detailed usage conditions:
+==========================
+
+What is forbidden:
+------------------
+
+It is forbidden to sell the mikachan font (This includes modified versions).
+
+Usage conditions:
+-----------------
+
+There are not restrictions neither for personal nor for commercial use.
+Please use it freely.
+
+- Redistribution and reprint is free.
+
+- if it is published on some media, I would be happy to receive
+  a note.
+
+- If you send me screen shots or photographs of commercial use of
+  this font, I will add them to the section "introduction of the work"
+  of my web site.

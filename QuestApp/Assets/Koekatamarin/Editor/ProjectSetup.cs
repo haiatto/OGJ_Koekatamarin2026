@@ -44,8 +44,8 @@ namespace Koekatamarin.Editor
             PlayerSettings.companyName = "haiatto";
             PlayerSettings.productName = "Koekatamarin 2026";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.haiatto.koekatamarin2026");
-            PlayerSettings.bundleVersion = "0.6.0";
-            PlayerSettings.Android.bundleVersionCode = 6;
+            PlayerSettings.bundleVersion = "0.7.0";
+            PlayerSettings.Android.bundleVersionCode = 7;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel32;
@@ -95,8 +95,16 @@ namespace Koekatamarin.Editor
             manager.isInsightPassthroughEnabled = true;
             manager.shouldBoundaryVisibilityBeSuppressed = false;
             rigObject.AddComponent<OVRPassthroughLayer>(); // Underlay by default.
+            LegacyAppearanceSetup.Prepare();
             var app = new GameObject("Koekatamarin").AddComponent<Experience>();
             app.rig = rig; app.font = font; app.panelMaterial = panel; app.beamMaterial = beam;
+            app.voiceFonts = new[]
+            {
+                new VoiceFontChoice { id = "mikachan-pb", title = "みかちゃん-PB", font = AssetDatabase.LoadAssetAtPath<Font>(LegacyAppearanceSetup.Art + "mikachan-PB.ttf") },
+                new VoiceFontChoice { id = "lightnovel-pop", title = "ラノベPOP", font = AssetDatabase.LoadAssetAtPath<Font>(LegacyAppearanceSetup.Art + "LightNovelPOP.otf") },
+                new VoiceFontChoice { id = "noto-sans-jp", title = "Noto Sans JP", font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Koekatamarin/Resources/NotoSansCJKjp-Regular.otf") }
+            };
+            app.voiceMaterial = LegacyAppearanceSetup.VoiceMaterial();
             app.environment = LegacyEnvironmentSetup.Create();
             var hands = app.gameObject.AddComponent<HandControls>();
             hands.head = rig.centerEyeAnchor;
@@ -173,6 +181,12 @@ namespace Koekatamarin.Editor
                 AssetDatabase.CreateAsset(pipeline, Generated + "/QuestURP.asset");
             }
             GraphicsSettings.defaultRenderPipeline = pipeline;
+            pipeline.supportsCameraDepthTexture = true;
+            pipeline.supportsCameraOpaqueTexture = true;
+            var serializedPipeline = new SerializedObject(pipeline);
+            serializedPipeline.FindProperty("m_OpaqueDownsampling").intValue = (int)Downsampling.None;
+            serializedPipeline.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(pipeline);
             QualitySettings.renderPipeline = pipeline;
             QualitySettings.vSyncCount = 0;
         }

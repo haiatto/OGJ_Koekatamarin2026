@@ -31,7 +31,8 @@ namespace Koekatamarin.Tests
                 Assert.That(AssetDatabase.GetAssetPath(sky.sharedMaterial.GetTexture("_BaseMap")), Does.EndWith("Art/Legacy/Yuuyake.tga"));
                 Assert.That(sky.GetComponent<MeshFilter>().sharedMesh.vertexCount, Is.GreaterThan(0));
                 var water = renderers.First(x => x.sharedMaterial.name == "SunsetOcean");
-                Assert.That(water.GetComponent<MeshFilter>().sharedMesh.triangles.Length / 3, Is.LessThanOrEqualTo(10000));
+                var sourceMesh = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Koekatamarin/Art/Legacy/ocean_plane.FBX").GetComponentInChildren<MeshFilter>().sharedMesh;
+                Assert.That(water.GetComponent<MeshFilter>().sharedMesh.triangles.Length, Is.EqualTo(sourceMesh.triangles.Length * 6));
                 Assert.That(water.GetComponent<MeshFilter>().sharedMesh.bounds.size.y, Is.GreaterThanOrEqualTo(.05f));
             }
             finally { if (opened) EditorSceneManager.CloseScene(scene, true); }
@@ -42,7 +43,7 @@ namespace Koekatamarin.Tests
         {
             var go = new GameObject("VR test");
             var head = new GameObject("Head");
-            var source = new Material(Shader.Find("Koekatamarin/Sunset Ocean"));
+            var source = new Material(Shader.Find("Koekatamarin/Water4 Port"));
             Material instance = null;
             try
             {

@@ -24,9 +24,10 @@ namespace Koekatamarin.Tests
                 Object.DestroyImmediate(wall.GetComponent<BoxCollider>());
                 wall.AddComponent<MeshCollider>().sharedMesh = wall.GetComponent<MeshFilter>().sharedMesh;
                 var word = voice.AddComponent<WordProjectile>();
-                word.Initialize(AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Koekatamarin/Generated/Japanese.asset"));
-                word.Launch("こんにちは", new Pose(new Vector3(1000, 1, 0), Quaternion.identity), Color.white);
-                Assert.That(voice.GetComponentsInChildren<TextMeshPro>().Length, Is.EqualTo(5));
+                var font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Koekatamarin/Art/Legacy/mikachan-PB.ttf");
+                word.Initialize(font, font.material);
+                word.Launch("縺薙ｓ縺ｫ縺｡縺ｯ", new Pose(new Vector3(1000, 1, 0), Quaternion.identity));
+                Assert.That(voice.GetComponentsInChildren<TextMesh>().Length, Is.EqualTo(5));
                 var body = voice.GetComponent<Rigidbody>();
                 Assert.That(body.useGravity, Is.True);
                 Assert.That(body.linearVelocity, Is.EqualTo(new Vector3(0, 5, 10)));

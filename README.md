@@ -8,16 +8,16 @@
 
 ## 現在の状態
 
-**ReazonSpeechの切替、手操作・VR移動、5層の文字と部屋への衝突を追加したQuest向けAPK（0.6.0）をQuest 3に導入しました。** 新規Unityプロジェクトは `QuestApp/` です。実機ログでReazonSpeechの認識処理と部屋メッシュ読込を確認しました。手操作・移動・衝突の体感と認識精度は引き続き実機確認が必要です。ローカル出力は `QuestApp/Builds/Koekatamarin2026.apk`（約506 MB）です。APKはGitに含めず、[ビルド手順と検証結果](docs/quest-prototype.ja.md)を記録しています。
+**0.7.0では、原作のTextMesh構造とWater4シェーダーを移植し、無料フォントの切替を追加しています。** 新規Unityプロジェクトは `QuestApp/` です。「みかちゃん-PB」「ラノベPOP」「Noto Sans JP」を選択できます。HG創英角ポップ体は新版に同梱しません。[表現の移植範囲とフォントの利用条件](docs/legacy-appearance-port.ja.md)に、原作と一致させた部分・変更した部分・未検証部分を記録しています。44件の自動テスト、3書体のEditor描画・切替、VR/MR往復を確認し、0.7.0のAPKを生成してQuest 3へ導入・起動しました。実機での書体切替と海の左右表示は確認待ちです。出力は `QuestApp/Builds/Koekatamarin2026.apk`（約510 MB）です。[検査結果](docs/validation/quest-0.7.0.json)。
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
 [要件ごとの検証状況](docs/requirements-status.ja.md)と、Questを接続できたときの[導入・実機確認手順](docs/device-validation.ja.md)を用意しています。
 
-- Quest 3単体動作、MRを標準とします。オプションのVRでは原作素材を使った夕日・砂浜と、新しい軽量な水面を表示します。[VR復元の範囲](docs/vr-restoration.ja.md)。
+- Quest 3単体動作、MRを標準とします。オプションのVRでは原作素材を使った夕日・砂浜と、Water4移植版の水面を表示します。[VR復元の範囲](docs/vr-restoration.ja.md)。
 - 原作の中心は「音声認識 → 日本語の文字を塊として飛ばす」です。読み上げ（TTS）は別機能です。
-- 日本語音声認識は端末内処理です。ReazonSpeech k2-v2を初期選択し、SenseVoice Smallへパネルで切り替えられます。音声は起動時ONで、Silero VADによる発話の区切りで文字を発射します。[音声・手・移動の操作](docs/modern-controls.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
-- 文字は頭の前から発射する5層構造とRigidbodyに変更しました。MRでは許可された部屋データのメッシュ、VRでは地面・海面に衝突します。[原作の文字・衝突・海・声量の調査](docs/original-voice-and-water.ja.md)。
+- 日本語音声認識は端末内処理です。ReazonSpeech k2-v2を初期選択し、SenseVoice Smallへパネルで切り替えられます。音声は起動時ONです。現在はSilero VADによる区切りで文字を発射しており、ユーザー要望のVAD撤去・原作の途中結果差分発射への復帰は未完了です。[音声・手・移動の操作](docs/modern-controls.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
+- 文字は原作の5層TextMesh構造とRigidbodyを使い、頭の前から発射します。MRでは許可された部屋データのメッシュ、VRでは地面・海面に衝突します。[原作の文字・衝突・海・声量の調査](docs/original-voice-and-water.ja.md)。
 - 同室のMRでは、共通の2点をコントローラーで指定して文字の発射位置と向きを共有できます。[位置合わせの操作](docs/shared-space.ja.md)。
 - NAT越えは基本的に対象外とし、インターネット越しの対戦や接続支援サービスは開発計画に含めません。
 - 元のUnity 4プロジェクトを最新Unityでそのまま開く前に、[調査報告](docs/revival-investigation.ja.md)を参照してください。

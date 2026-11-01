@@ -20,5 +20,19 @@
     "sha256": "f06dc7b7381d6961dc43948d46a3f4ee22583620900eab2b53a399c6655405ae",
     "sourceCommit": "c8f7b3292cf81acc1728f2e41313f80f89fe3ee7",
     "sourceBlobSha256": "f06dc7b7381d6961dc43948d46a3f4ee22583620900eab2b53a399c6655405ae"
+  },
+  {
+    "source": "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Textures/smallWavesMap.png",
+    "destination": "QuestApp/Assets/Koekatamarin/Art/Legacy/smallWavesMap.png",
+    "sha256": "af06ba7d1d45c7a85bd4dcc2269309c0572e1fa50a286d493bae70d2659a271f",
+    "sourceBlobSha256": "af06ba7d1d45c7a85bd4dcc2269309c0572e1fa50a286d493bae70d2659a271f",
+    "sourceCommit": "01b7a14f7dcd8ab7e76557ce0cc7e99bc59e6ee0"
+  },
+  {
+    "source": "New Unity Project/Assets/Standard Assets/Water (Pro Only)/Water4/Sources/Objects/ocean_plane.FBX",
+    "destination": "QuestApp/Assets/Koekatamarin/Art/Legacy/ocean_plane.FBX",
+    "sha256": "2f3cd8fa415b0bbf00733e898c6a3534070dcfb5d162c9a1be9fd92cef7226c9",
+    "sourceBlobSha256": "2f3cd8fa415b0bbf00733e898c6a3534070dcfb5d162c9a1be9fd92cef7226c9",
+    "sourceCommit": "01b7a14f7dcd8ab7e76557ce0cc7e99bc59e6ee0"
   }
 ]

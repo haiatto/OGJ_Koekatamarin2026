@@ -10,6 +10,13 @@ namespace Koekatamarin
     {
         public OVRCameraRig rig;
         public TMP_FontAsset font;
+        public VoiceFontChoice[] voiceFonts;
+        Font voiceFont;
+        int voiceFontIndex;
+        const string VoiceFontPreference = "Koekatamarin.VoiceFont";
+        public string VoiceFontName => voiceFonts[voiceFontIndex].title;
+        public Material voiceMaterial;
+        Material runtimeVoiceMaterial;
         public Material panelMaterial;
         public Material beamMaterial;
         public LegacyEnvironment environment;
@@ -19,8 +26,6 @@ namespace Koekatamarin
         public bool IsMixedReality => mr;
         public bool IsSwitching => switching;
         readonly string[] samples = { "こんにちは！", "声が文字になる", "コエカタマリン", "おはよう", "ありがとう", "わあああ！" };
-        readonly Color[] colors = { new Color(.25f, 1, .85f), new Color(1, .65f, .3f),
-            new Color(.6f, .75f, 1), new Color(1, .55f, .75f), Color.white, new Color(1, .9f, .3f) };
         readonly WordProjectile[] pool = new WordProjectile[64];
         readonly Queue<string> voiceShots = new Queue<string>();
         readonly SharedSpace sharedSpace = new SharedSpace();
@@ -42,6 +47,7 @@ namespace Koekatamarin
         TextMeshPro modeLabel;
         TextMeshPro alignmentLabel;
         TextMeshPro modelLabel;
+        TextMeshPro voiceFontLabel;
         LineRenderer beam;
         Transform originMarker;
         LineRenderer directionMarker;
@@ -76,11 +82,16 @@ namespace Koekatamarin
             passthrough.enabled = true;
             ConfigureCamera(true);
             if (environment != null) environment.Hide();
+            runtimeVoiceMaterial = new Material(voiceMaterial);
+            Font.textureRebuilt += RefreshVoiceAtlas;
+            string savedFont = PlayerPrefs.GetString(VoiceFontPreference, "mikachan-pb");
+            int savedIndex = System.Array.FindIndex(voiceFonts, choice => choice.id == savedFont);
+            SelectVoiceFont(Mathf.Max(0, savedIndex), false);
             for (int i = 0; i < pool.Length; i++)
             {
                 pool[i] = new GameObject("Word " + i).AddComponent<WordProjectile>();
                 pool[i].transform.SetParent(transform);
-                pool[i].Initialize(font, rig.centerEyeAnchor);
+                pool[i].Initialize(voiceFont, runtimeVoiceMaterial);
             }
             BuildPanel();
             beam = new GameObject("Pointer").AddComponent<LineRenderer>();
@@ -164,7 +175,8 @@ namespace Koekatamarin
             Button("部屋読込", new Vector3(.18f, -.55f, 0), () => roomCollision?.RequestLoad());
             Button("左へ30度", new Vector3(-.18f, -.68f, 0), () => TurnFromPanel(-1));
             Button("右へ30度", new Vector3(.18f, -.68f, 0), () => TurnFromPanel(1));
-            status = Label(mainControls, "準備中", new Vector3(0, -.98f, -.02f), .26f, new Vector2(1.4f, .45f));
+            voiceFontLabel = Button("書体：" + VoiceFontName + " →", new Vector3(0, -.81f, 0), NextVoiceFont, width: .68f);
+            status = Label(mainControls, "準備中", new Vector3(0, -1.11f, -.02f), .26f, new Vector2(1.4f, .45f));
             status.textWrappingMode = TextWrappingModes.Normal;
             BuildAddressPanel();
         }
@@ -442,7 +454,7 @@ namespace Koekatamarin
         void Emit(string text)
         {
             nextShot = Time.unscaledTime + .3f;
-            int style = sampleIndex % colors.Length;
+            int style = network.Connected ? (Random.Range(0, 3) == 0 ? 2 : 1) : 0;
             Pose pose = PersonalPose(false);
             Spawn(text, style, pose);
             if (!network.Connected) return;
@@ -471,8 +483,7 @@ namespace Koekatamarin
         {
             var head = rig.centerEyeAnchor;
             var projectile = pool[projectileIndex++ % pool.Length];
-            projectile.Launch(text, pose, colors[style],
-                !mr, environment != null ? environment.FloorY : head.position.y - 1.65f);
+            projectile.Launch(text, pose, style);
         }
         void OnApplicationPause(bool paused)
         {
@@ -487,8 +498,33 @@ namespace Koekatamarin
             }
             else BeginMrBoundaryRequest();
         }
+        public void NextVoiceFont()
+        { SelectVoiceFont((voiceFontIndex + 1) % voiceFonts.Length, true); }
+
+        void SelectVoiceFont(int index, bool save)
+        {
+            voiceFontIndex = index;
+            voiceFont = voiceFonts[index].font;
+            foreach (var word in pool)
+                if (word != null) word.SetFont(voiceFont, runtimeVoiceMaterial);
+            RefreshVoiceAtlas(voiceFont);
+            if (voiceFontLabel != null) voiceFontLabel.text = "書体：" + VoiceFontName + " →";
+            if (save)
+            {
+                PlayerPrefs.SetString(VoiceFontPreference, voiceFonts[index].id);
+                PlayerPrefs.Save();
+            }
+        }
+
+        void RefreshVoiceAtlas(Font changed)
+        {
+            if (changed == voiceFont && runtimeVoiceMaterial != null)
+                runtimeVoiceMaterial.mainTexture = voiceFont.material.mainTexture;
+        }
         void OnDestroy()
         {
+            Font.textureRebuilt -= RefreshVoiceAtlas;
+            if (runtimeVoiceMaterial != null) Destroy(runtimeVoiceMaterial);
             if (speech != null) { speech.FinalTranscript -= SubmitFinalTranscript; speech.Stopped -= ClearVoiceQueue; }
             if (display != null) display.RecenteredPose -= InvalidateAlignment;
             OVRManager.TrackingLost -= InvalidateAlignment;

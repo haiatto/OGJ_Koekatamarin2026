@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Koekatamarin
 {
-    // Optional VR scenery. The original sky mesh/texture are preserved; water uses a new URP pass.
+    // Optional VR scenery, with the original art and a URP port of the active Water4 shader.
     public sealed class LegacyEnvironment : MonoBehaviour
     {
         public Material ocean;
@@ -21,8 +21,8 @@ namespace Koekatamarin
                 foreach (var renderer in GetComponentsInChildren<MeshRenderer>(true))
                     if (renderer.sharedMaterial == ocean) renderer.sharedMaterial = oceanInstance;
             }
-            Vector3 sun = transform.rotation * new Vector3(0, .09f, 1).normalized;
-            oceanInstance.SetVector("_SunDirection", new Vector4(sun.x, sun.y, sun.z, 0));
+            Vector3 light = transform.rotation * (Vector3)ocean.GetVector("_WorldLightDir");
+            oceanInstance.SetVector("_WorldLightDir", new Vector4(light.x, light.y, light.z, 0));
             gameObject.SetActive(true);
         }
 

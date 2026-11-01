@@ -102,3 +102,9 @@ python -m unittest discover -s tools -p test_quest_device.py -v
 ```
 
 9件のオフラインテストで、接続対象の曖昧さ、未承認端末、APK検査失敗、導入失敗、他アプリの起動拒否、ログのPID制限、プロセス変化、欠測値の扱いを確認しています。実際のQuestへの導入・起動・ログ取得も上記の範囲で確認しました。
+
+## 0.7.0 導入記録（2026-11-02）
+
+無線ADBで更新インストールし、versionName 0.7.0 / versionCode 7 とコールド起動の成功、アプリプロセスの継続を確認しました。ReazonSpeechの認識処理1件（処理時間0.07秒）がログにあります。文字の表示・書体切替はユーザーの実機確認待ちです。VRのWater4左右反射と持続性能は未検証です。
+
+[APK検査結果](validation/quest-0.7.0.json)、[表現の移植範囲と書体切替](legacy-appearance-port.ja.md)。Rawログは公開せずローカルの `.work/quest-device/` に保存します。

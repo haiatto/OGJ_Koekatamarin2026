@@ -1,3 +1,5 @@
+> 0.7.0更新: 原作の5層TextMeshとWater4を移植し、みかちゃん-PB・ラノベPOP・Noto Sans JPの切替を追加しています。[現在の表現と変更範囲](legacy-appearance-port.ja.md)を参照してください。以下は0.6.0以前の記録を含みます。
+
 # 原作の声・衝突・水面の再調査
 
 2026-11-02、保存済み原作ソース（元コミット `c07556014bbb4a17f4973f38aac01426bd11b4ea`）を確認しました。原作の `New Unity Project/` は変更しません。現代版のUnityプロジェクトは `QuestApp/` です。

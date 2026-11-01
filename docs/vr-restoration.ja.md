@@ -1,3 +1,5 @@
+> 0.7.0更新: 原作の5層TextMeshとWater4を移植し、みかちゃん-PB・ラノベPOP・Noto Sans JPの切替を追加しています。[現在の表現と変更範囲](legacy-appearance-port.ja.md)を参照してください。以下は0.6.0以前の記録を含みます。
+
 > 2026-11-02更新: 0.6.0ではVR移動・手入力・5層文字・Rigidbody衝突を追加しています。[現在の操作](modern-controls.ja.md)と[原作構造の再調査](original-voice-and-water.ja.md)を参照してください。以下の発射・操作の説明は0.3〜0.5時点の記録です。水面は新規URP実装で、原作Water4そのものではありません。
 
 # 夕日のVRモード
