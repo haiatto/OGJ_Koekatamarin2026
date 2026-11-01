@@ -106,5 +106,8 @@
     "OVRMetricsToolClient reported NumberFormatException for 0-stub, also observed in the previous build; not counted as an ASR exception."
   ],
   "deviceInterimUserConfirmedDate": "2026-11-02",
-  "deviceInterimUserConfirmationScope": "User confirmed that text is emitted while still speaking on Quest 3 with 0.8.0. Silence/noise behavior, exact latency, long-context boundary accuracy and sustained performance were not confirmed."
+  "deviceInterimUserConfirmationScope": "User confirmed that text is emitted while still speaking on Quest 3 with 0.8.0. Silence/noise behavior, exact latency, long-context boundary accuracy and sustained performance were not confirmed.",
+  "deviceDuplicateEmissionUserReported": true,
+  "deviceDuplicateEmissionReportDate": "2026-11-02",
+  "deviceDuplicateEmissionScope": "User reports frequent transcript revisions cause multiple shots from the same speech. User clarified that interim emission should remain; final-only emission is not the intended fix. Recognition strategy requires reevaluation; not fixed."
 }

@@ -1,3 +1,9 @@
+> 2026-11-02 実機フィードバック: 0.8.0は途中認識の訂正が多く、同じ発話が多重に飛ぶとユーザー報告。途中から文字が飛ぶこと自体は原作の意図として維持する。「確定まで飛ばさない」「手前の文字だけを更新する」案は採用しない。現在の一括再認識による途中結果は、原作の認識サービスの途中結果と同じ性質ではなく、差分処理だけの移植では体験を再現できていない。
+>
+> 保存ソース・変更履歴に加え、`ReleseFolder/koekatamariProto_Data/Managed/Assembly-CSharp.dll` のILをMono.Cecilで読み、Updateの差分比較→Shoot/ShootMulti→新規生成・初速設定を確認した（旧バイナリは実行せず、原作ファイルは未変更）。途中と確定の送信に別フラグは付いていない。当時のGoogle内部での認識処理や訂正頻度までは、このコードから断定しない。
+>
+> 次の評価対象は本来の逐次認識。公式資料で日本語に対応する [Nemotron 3.5 ASR Streaming](https://k2-fsa.github.io/sherpa/onnx/nemo/nemotron-streaming.html#sherpa-onnx-nemotron-3-5-asr-streaming-0-6b-560ms-int8-2026-06-11-multilingual) を確認。現在のsherpa-onnx 2.0.1のソースにも対応があるが、モデル導入・Questでの速度と途中結果の安定性は未評価であり、採用・解決済みとは扱わない。
+
 # 0.8.0: 原作の途中結果差分発射への復帰
 
 2026-11-02。`server/client.html` は `interimResults = true` で途中・確定の両結果を送り、`KoeKatamarinBehaviourScript.Update` は前回と先頭から比較し、最初に異なる位置以降だけを発射していました。この差分処理を `TranscriptDelta` へ移植しました。
