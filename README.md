@@ -8,7 +8,9 @@
 
 ## 現在の状態
 
-**0.7.0では、原作のTextMesh構造とWater4シェーダーを移植し、無料フォントの切替を追加しています。** 新規Unityプロジェクトは `QuestApp/` です。「みかちゃん-PB」「ラノベPOP」「Noto Sans JP」を選択できます。HG創英角ポップ体は新版に同梱しません。[表現の移植範囲とフォントの利用条件](docs/legacy-appearance-port.ja.md)に、原作と一致させた部分・変更した部分・未検証部分を記録しています。44件の自動テスト、3書体のEditor描画・切替、VR/MR往復を確認し、0.7.0のAPKを生成してQuest 3へ導入・起動しました。Quest 3で3書体すべての切替と文字表示をユーザー確認済みです（2026-11-02）。海の左右表示は確認待ちです。出力は `QuestApp/Builds/Koekatamarin2026.apk`（約510 MB）です。[検査結果](docs/validation/quest-0.7.0.json)。
+**0.8.0ではSilero VADを撤去し、原作の「認識途中の文字を差分で飛ばす」処理へ戻しています。** 47件のUnityテスト、導入ツール10件のテストを通過し、APKの生成・検査とQuest 3への更新・起動を確認しました。実機ログでReazonSpeechの途中結果を確認していますが、発射タイミング・環境音の誤認識・持続負荷は装着確認待ちです。[音声処理と原作との差](docs/offline-speech.ja.md)、[0.8.0検査結果](docs/validation/quest-0.8.0.json)。APKは `QuestApp/Builds/Koekatamarin2026.apk`（約509 MB）です。
+
+新規Unityプロジェクトは `QuestApp/` です。0.7.0で原作の5層TextMeshとWater4シェーダーを移植し、無料フォント切替を追加しました。「みかちゃん-PB」「ラノベPOP」「Noto Sans JP」の切替と文字表示は0.7.0のQuest 3でユーザー確認済みです（2026-11-02）。HG創英角ポップ体は新版に同梱しません。海の左右表示は確認待ちです。[表現の移植範囲とフォントの利用条件](docs/legacy-appearance-port.ja.md)。
 
 原作の履歴とファイルを保存しています。同じ所有者のため、GitHubのFork機能ではなく、履歴を引き継ぐ別リポジトリとして管理します。
 
@@ -16,7 +18,7 @@
 
 - Quest 3単体動作、MRを標準とします。オプションのVRでは原作素材を使った夕日・砂浜と、Water4移植版の水面を表示します。[VR復元の範囲](docs/vr-restoration.ja.md)。
 - 原作の中心は「音声認識 → 日本語の文字を塊として飛ばす」です。読み上げ（TTS）は別機能です。
-- 日本語音声認識は端末内処理です。ReazonSpeech k2-v2を初期選択し、SenseVoice Smallへパネルで切り替えられます。音声は起動時ONです。現在はSilero VADによる区切りで文字を発射しており、ユーザー要望のVAD撤去・原作の途中結果差分発射への復帰は未完了です。[音声・手・移動の操作](docs/modern-controls.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
+- 日本語音声認識は端末内処理です。ReazonSpeech k2-v2を初期選択し、SenseVoice Smallへパネルで切り替えられます。音声は起動時ONです。0.8.0ではSilero VADを撤去し、原作の途中結果差分発射へ戻しています。一括認識モデルを0.512秒ごとに実行し直すため、原作との認識タイミングの差や長い発話の区切りは[音声処理の説明](docs/offline-speech.ja.md)に記載しています。[音声・手・移動の操作](docs/modern-controls.ja.md)。通信は同じWi-Fi内のQuest同士によるP2Pで、Unity Relayは使いません。
 - 文字は原作の5層TextMesh構造とRigidbodyを使い、頭の前から発射します。MRでは許可された部屋データのメッシュ、VRでは地面・海面に衝突します。[原作の文字・衝突・海・声量の調査](docs/original-voice-and-water.ja.md)。
 - 同室のMRでは、共通の2点をコントローラーで指定して文字の発射位置と向きを共有できます。[位置合わせの操作](docs/shared-space.ja.md)。
 - NAT越えは基本的に対象外とし、インターネット越しの対戦や接続支援サービスは開発計画に含めません。

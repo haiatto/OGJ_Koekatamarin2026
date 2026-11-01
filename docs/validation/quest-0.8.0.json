@@ -1,0 +1,108 @@
+{
+  "apk": "Koekatamarin2026.apk",
+  "bytes": 508917673,
+  "sha256": "358c1abaa98bea35630946b447e7b7bc63be44aa0e683823f4d633583a112310",
+  "architecture": "arm64-v8a",
+  "scriptingBackend": "IL2CPP",
+  "signatureVerified": true,
+  "requiredManifestEntriesVerified": true,
+  "alwaysBoundaryless": false,
+  "nativeLibraries": [
+    "lib/arm64-v8a/LibRuntimeOptimizer.so",
+    "lib/arm64-v8a/libOVRMetricsTool.so",
+    "lib/arm64-v8a/libOVRPlugin.so",
+    "lib/arm64-v8a/libUnityOpenXR.so",
+    "lib/arm64-v8a/libUnityOpenXRHands.so",
+    "lib/arm64-v8a/libXrApiLayer_METAX_operator.so",
+    "lib/arm64-v8a/lib_burst_generated.so",
+    "lib/arm64-v8a/libc++_shared.so",
+    "lib/arm64-v8a/libgame.so",
+    "lib/arm64-v8a/libil2cpp.so",
+    "lib/arm64-v8a/libloaderimpl.so",
+    "lib/arm64-v8a/libmain.so",
+    "lib/arm64-v8a/libmrutilitykitshared.so",
+    "lib/arm64-v8a/libonnxruntime.so",
+    "lib/arm64-v8a/libopenxr_loader.so",
+    "lib/arm64-v8a/libsherpa-onnx-c-api.so",
+    "lib/arm64-v8a/libswappywrapper.so",
+    "lib/arm64-v8a/libunity.so"
+  ],
+  "offlineSpeechModelHashes": {
+    "model.int8.onnx": "c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51",
+    "tokens.txt": "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc",
+    "Reazon/encoder-epoch-99-avg-1.int8.onnx": "2c7bd08a8a99f9ddd0d9e458456577b1f6279214e51426f114f9eced44c54e1d",
+    "Reazon/decoder-epoch-99-avg-1.onnx": "58b18211ae06265466bfa17172dab574df94f76c8bcb61a3640c28ba860e4124",
+    "Reazon/joiner-epoch-99-avg-1.int8.onnx": "49cc7ea1d3d35a40a27442db5e89996da64bf0e683a903dce76e99e57a12e4de",
+    "Reazon/tokens.txt": "2c3ac659818a48a0c04010e0593bbc4d7c8a24a054340b01131499c05fd52def"
+  },
+  "sileroVadBundled": false,
+  "speechLicensesBundled": true,
+  "fontLicensesBundled": true,
+  "deviceTested": false,
+  "appVersion": "0.8.0",
+  "buildCode": 8,
+  "unityVersion": "6000.6.7f1",
+  "editorTests": {
+    "passed": 47,
+    "failed": 0
+  },
+  "deviceToolTests": {
+    "passed": 10,
+    "failed": 0
+  },
+  "sileroVadEnabled": false,
+  "amplitudeThresholdEnabled": false,
+  "exactDigitalZeroSkipped": true,
+  "interimStepSeconds": 0.512,
+  "contextLimitSeconds": 12.288,
+  "deltaRule": "First changed character onward, matching the original common-prefix comparison; already emitted corrections are not retracted.",
+  "editorInterimRecognition": {
+    "fixtureSeconds": 7.2,
+    "inputCadenceSamples": 512,
+    "sampleRate": 16000,
+    "resultsArrivedBeforeEnd": true,
+    "ReazonSpeech": {
+      "updates": 12,
+      "firstContextSeconds": 0.512,
+      "maximumDecodeSeconds": 0.118
+    },
+    "SenseVoice": {
+      "updates": 16,
+      "firstContextSeconds": 0.512,
+      "maximumDecodeSeconds": 0.278
+    }
+  },
+  "deviceInstalled": true,
+  "deviceLaunchSucceeded": true,
+  "deviceInterimUserConfirmed": false,
+  "deviceWaterStereoVerified": false,
+  "deviceLanTested": false,
+  "deviceSpatialAlignmentVerified": false,
+  "deviceHandControlsVerified": false,
+  "deviceRoomCollisionVerified": false,
+  "lanProtocolVersion": 2,
+  "limitations": [
+    "Non-streaming models are repeatedly decoded; not native streaming or an end-to-end latency guarantee.",
+    "A word crossing the 12.288-second context boundary may be split or misrecognized.",
+    "Noise recognition and sustained Quest CPU/thermal performance remain to be evaluated."
+  ],
+  "installedVersionCodeVerified": 8,
+  "deviceReazonInterimInferenceObserved": true,
+  "deviceValidationScope": "Wi-Fi ADB update install, versionName 0.8.0/versionCode 8, cold activity launch, continuing process and two ReazonSpeech interim updates observed. This does not confirm intended speech content, on-screen emission timing, noise behavior or sustained performance.",
+  "deviceSpeechSamples": {
+    "model": "ReazonSpeech",
+    "sampleCount": 2,
+    "contextSeconds": [
+      0.51,
+      1.02
+    ],
+    "decodeSeconds": [
+      0.1,
+      0.1
+    ]
+  },
+  "deviceLogNotes": [
+    "No E Unity lines in captured app log.",
+    "OVRMetricsToolClient reported NumberFormatException for 0-stub, also observed in the previous build; not counted as an ASR exception."
+  ]
+}

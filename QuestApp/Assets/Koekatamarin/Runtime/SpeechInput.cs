@@ -10,10 +10,10 @@ using UnityEngine.Android;
 
 namespace Koekatamarin
 {
-    // Audio stays in memory. Only final text is passed to the experience/LAN layer.
+    // Audio stays in memory. Only changed text from interim hypotheses reaches the experience/LAN.
     public sealed class SpeechInput : MonoBehaviour
     {
-        public event Action<string> FinalTranscript;
+        public event Action<string> TranscriptChanged;
         public event Action Stopped;
         AudioClip clip;
         LocalSpeechRecognizer recognizer;
@@ -26,7 +26,6 @@ namespace Koekatamarin
         float lastRead;
         float started;
         bool microphoneStarted;
-        float nextResult;
         string lastText = "";
         SpeechModels.Model workerModel;
         bool resumeAfterPause;
@@ -173,12 +172,11 @@ namespace Koekatamarin
                 Level = Mathf.Sqrt(sum / input.Length);
                 resampler.Push(input);
             }
-            if (Time.unscaledTime >= nextResult && recognizer.TryRead(out var result))
+            while (recognizer.TryRead(out var result))
             {
-                nextResult = Time.unscaledTime + .3f;
                 lastText = result.Text;
-                FinalTranscript?.Invoke(result.Text);
-                Debug.Log("ASR completed: audio=" + result.AudioSeconds.ToString("F2") +
+                TranscriptChanged?.Invoke(result.Delta);
+                Debug.Log("ASR interim: audio=" + result.AudioSeconds.ToString("F2") +
                     "s decode=" + result.DecodeSeconds.ToString("F2") + "s model=" + ModelName); // Do not log the user's speech.
             }
             string preview = lastText.Length > 18 ? lastText.Substring(0, 18) + "…" : lastText;

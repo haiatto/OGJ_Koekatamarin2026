@@ -11,6 +11,54 @@ namespace Koekatamarin.Tests
 {
     public sealed class SpeechTests
     {
+        [Test]
+        public void OriginalPrefixDifferenceIncludesCorrectionsButNotDuplicateFinals()
+        {
+            var delta = new TranscriptDelta();
+            Assert.That(delta.Accept("今日"), Is.EqualTo("今日"));
+            Assert.That(delta.Accept("今日は晴れ"), Is.EqualTo("は晴れ"));
+            Assert.That(delta.Accept("今日は雨"), Is.EqualTo("雨"));
+            Assert.That(delta.Accept("今日は雨"), Is.Empty);
+            Assert.That(delta.Accept("今日"), Is.Empty);
+            Assert.That(delta.Accept("今日は"), Is.EqualTo("は"));
+            delta.Reset();
+            Assert.That(delta.Accept("今日は"), Is.EqualTo("今日は"));
+        }
+
+        [Test]
+        public void ChangedSupplementaryCharacterRemainsValidUnicode()
+        {
+            var delta = new TranscriptDelta();
+            delta.Accept("声😀");
+            Assert.That(delta.Accept("声😁"), Is.EqualTo("😁"));
+            string longText = new string('あ', 100);
+            delta.Reset();
+            delta.Accept(longText);
+            Assert.That(delta.Accept(longText + "続き"), Is.EqualTo("続き"), "Diff must not be capped at LAN text length");
+        }
+
+        [Test]
+        public void GrowingWindowsPreserveEverySampleAcrossContextBoundaryAndReset()
+        {
+            var window = new IncrementalSpeechWindow();
+            for (int offset = 0; offset < IncrementalSpeechWindow.MaxSamples; offset += 512)
+            {
+                var block = new float[512];
+                for (int i = 0; i < block.Length; i++) block[i] = offset + i;
+                var snapshot = window.Append(block);
+                if ((offset + 512) % IncrementalSpeechWindow.StepSamples != 0)
+                { Assert.That(snapshot, Is.Null); continue; }
+                Assert.That(snapshot.Length, Is.EqualTo(offset + 512));
+                for (int i = 0; i < snapshot.Length; i++) Assert.That(snapshot[i], Is.EqualTo((float)i));
+            }
+            Assert.That(window.Complete, Is.True);
+            window.Reset();
+            float[] silence = null;
+            for (int i = 0; i < 16; i++) silence = window.Append(new float[512]);
+            Assert.That(silence.Length, Is.EqualTo(IncrementalSpeechWindow.StepSamples));
+            Assert.That(silence, Is.All.Zero, "No previous audio may survive reset; silence is still decoded");
+        }
+
         [TestCase(16000)]
         [TestCase(44100)]
         [TestCase(48000)]
@@ -35,7 +83,7 @@ namespace Koekatamarin.Tests
         }
 
         [UnityTest]
-        public IEnumerator JapaneseSpeechPassesVadAndNativeRecognizerThenResetDropsPendingResults()
+        public IEnumerator SenseVoiceProducesInterimJapaneseWithoutVadAndResets()
         { return RecognizeFixture(SpeechModels.Model.SenseVoice); }
 
         [UnityTest]
@@ -58,27 +106,52 @@ namespace Koekatamarin.Tests
             while (!engine.Ready && engine.Error == null && deadline.Elapsed.TotalSeconds < 60) yield return null;
             Assert.That(engine.Error, Is.Null);
             Assert.That(engine.Ready, Is.True, "Native models must actually initialize");
-            // Feed at faster-than-real-time with pacing so this also exercises the bounded audio queue.
+            int updates = 0;
+            int fedSamples = 0;
+            int firstReceivedAtSample = int.MaxValue;
+            double firstAudioSeconds = double.PositiveInfinity;
+            string combinedHypotheses = "";
+            double maxDecode = 0;
+            void Drain()
+            {
+                while (engine.TryRead(out var result))
+                {
+                    updates++;
+                    firstReceivedAtSample = Math.Min(firstReceivedAtSample, fedSamples);
+                    firstAudioSeconds = Math.Min(firstAudioSeconds, result.AudioSeconds);
+                    combinedHypotheses += result.Text;
+                    maxDecode = Math.Max(maxDecode, result.DecodeSeconds);
+                    Assert.That(result.Delta, Is.Not.Empty);
+                }
+            }
+            // Real microphone cadence: the test must receive text before speech ends,
+            // not merely run a complete prerecorded utterance through an offline decoder.
             for (int i = 0; i < samples.Length + 16000; i += 512)
             {
                 var block = new float[512];
                 if (i < samples.Length) Array.Copy(samples, i, block, 0, Math.Min(512, samples.Length - i));
                 engine.Accept(block);
-                yield return null;
+                fedSamples = i + 512;
+                Drain();
+                yield return new WaitForSecondsRealtime(.032f);
             }
-            LocalSpeechRecognizer.Result result = default;
-            bool received = false;
-            while (!(received = engine.TryRead(out result)) && engine.Error == null && deadline.Elapsed.TotalSeconds < 90) yield return null;
+            float until = Time.realtimeSinceStartup + 1;
+            while (Time.realtimeSinceStartup < until) { Drain(); yield return null; }
             Assert.That(engine.Error, Is.Null);
-            Assert.That(received, Is.True, "VAD must produce a real Japanese transcript");
-            Assert.That(result.Text, Does.Match("[ぁ-んァ-ヶ一-龯]"));
-            Assert.That(result.Text, Does.Contain("中学").And.Contain("弁当"), "Known Japanese fixture must be recognized, not just any Japanese output");
-            Assert.That(result.AudioSeconds, Is.GreaterThan(.2));
+            Assert.That(updates, Is.GreaterThan(1), "Must produce multiple interim updates");
+            Assert.That(firstReceivedAtSample, Is.LessThan(samples.Length), "Result must arrive while the fixture is still speaking");
+            Assert.That(firstAudioSeconds, Is.LessThan(samples.Length / 16000.0 - .5),
+                "First transcript must precede end of the spoken fixture");
+            Assert.That(combinedHypotheses, Does.Contain("中学").And.Contain("弁当"));
             Assert.That(engine.DroppedWindows, Is.Zero);
-            UnityEngine.Debug.Log("ASR_FIXTURE model=" + SpeechModels.Name(model) + " text=" + result.Text + " decode=" + result.DecodeSeconds.ToString("F3") + "s audio=" + result.AudioSeconds.ToString("F3") + "s");
+            UnityEngine.Debug.Log("ASR_INTERIM_FIXTURE model=" + SpeechModels.Name(model) +
+                " updates=" + updates + " firstAudio=" + firstAudioSeconds.ToString("F3") +
+                "s maxDecode=" + maxDecode.ToString("F3") + "s");
             engine.Reset();
             Assert.That(engine.TryRead(out _), Is.False);
-            for (int i = 0; i < 50; i++) { engine.Accept(new float[512]); yield return null; }
+            for (int i = 0; i < 80; i++)
+            { engine.Accept(new float[512]); yield return new WaitForSecondsRealtime(.032f); }
+            yield return new WaitForSecondsRealtime(.5f);
             Assert.That(engine.TryRead(out _), Is.False, "Silence and reset must not emit stale speech");
             engine.Dispose();
             while (!engine.Finished && deadline.Elapsed.TotalSeconds < 95) yield return null;

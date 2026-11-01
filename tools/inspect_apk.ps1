@@ -36,12 +36,12 @@ try {
     $speechHashes = [ordered]@{
         'model.int8.onnx' = 'c71f0ce00bec95b07744e116345e33d8cbbe08cef896382cf907bf4b51a2cd51'
         'tokens.txt' = 'f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc'
-        'silero_vad.onnx' = '9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6'
         'Reazon/encoder-epoch-99-avg-1.int8.onnx' = '2c7bd08a8a99f9ddd0d9e458456577b1f6279214e51426f114f9eced44c54e1d'
         'Reazon/decoder-epoch-99-avg-1.onnx' = '58b18211ae06265466bfa17172dab574df94f76c8bcb61a3640c28ba860e4124'
         'Reazon/joiner-epoch-99-avg-1.int8.onnx' = '49cc7ea1d3d35a40a27442db5e89996da64bf0e683a903dce76e99e57a12e4de'
         'Reazon/tokens.txt' = '2c3ac659818a48a0c04010e0593bbc4d7c8a24a054340b01131499c05fd52def'
     }
+    if ($zip.GetEntry('assets/Speech/silero_vad.onnx')) { throw 'Obsolete Silero VAD model is still bundled' }
     foreach ($name in $speechHashes.Keys) {
         $entry = $zip.GetEntry('assets/Speech/' + $name)
         if (!$entry) { throw "Bundled speech model missing: $name" }
@@ -51,7 +51,7 @@ try {
         finally { $hasher.Dispose(); $stream.Dispose() }
         if ($digest -ne $speechHashes[$name]) { throw "Bundled speech model hash mismatch: $name" }
     }
-    foreach ($notice in @('ATTRIBUTION.txt', 'FunASR-MODEL-LICENSE.txt', 'Silero-VAD-LICENSE.txt',
+    foreach ($notice in @('ATTRIBUTION.txt', 'FunASR-MODEL-LICENSE.txt',
         'sherpa-onnx-LICENSE.txt', 'ONNX-Runtime-LICENSE.txt', 'ONNX-Runtime-ThirdPartyNotices.txt', 'ReazonSpeech-LICENSE.txt')) {
         if (!$zip.GetEntry('assets/Speech/Notices/' + $notice)) { throw "Speech license missing: $notice" }
     }
@@ -79,6 +79,7 @@ $report = [ordered]@{
     alwaysBoundaryless = $false
     nativeLibraries = $native
     offlineSpeechModelHashes = $speechHashes
+    sileroVadBundled = $false
     speechLicensesBundled = $true
     fontLicensesBundled = $true
     deviceTested = $false

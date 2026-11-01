@@ -23,7 +23,6 @@ DOWNLOADS = {
     'android.tar.bz2': (RELEASE + 'v2.0.1/sherpa-onnx-v2.0.1-android.tar.bz2', '39003753ec293425ed56723ea9b972b98841a490af3311670c3060548d654330'),
     'windows.tar.bz2': (RELEASE + 'v2.0.1/sherpa-onnx-v2.0.1-win-x64-shared-MD-Release-no-tts.tar.bz2', '11fd6a50b97eed38b54fb16d8219f49b16aa7f6a8e43a042316469ef47652e82'),
     'model.tar.bz2': (RELEASE + 'asr-models/' + MODEL + '.tar.bz2', '7d1efa2138a65b0b488df37f8b89e3d91a60676e416f515b952358d83dfd347e'),
-    'silero_vad.onnx': (RELEASE + 'asr-models/silero_vad.onnx', '9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6'),
 }
 
 
@@ -92,7 +91,7 @@ def bindings(source):
         for name in re.findall(r'(?:class|struct)\s+(\w+)', content):
             types[name] = path
     selected = set()
-    pending = [types[n] for n in ('OfflineRecognizer', 'VoiceActivityDetector')]
+    pending = [types[n] for n in ('OfflineRecognizer',)]
     while pending:
         path = pending.pop()
         if path in selected:
@@ -143,7 +142,9 @@ def main():
     models.mkdir(parents=True, exist_ok=True)
     for name in ('model.int8.onnx', 'tokens.txt'):
         shutil.copyfile(unpacked / MODEL / name, models / name)
-    shutil.copyfile(CACHE / 'silero_vad.onnx', models / 'silero_vad.onnx')
+    # Remove the obsolete bundled model when upgrading a pre-0.8 checkout.
+    for name in ('silero_vad.onnx', 'silero_vad.onnx.meta'):
+        (models / name).unlink(missing_ok=True)
     from setup_reazon import main as prepare_reazon
     prepare_reazon()
     print('Offline speech assets ready. No download is needed on the Quest.', flush=True)

@@ -70,7 +70,7 @@ namespace Koekatamarin
             Physics.IgnoreLayerCollision(8, 0, true);
             network = gameObject.AddComponent<LanPeer>();
             speech = gameObject.AddComponent<SpeechInput>();
-            speech.FinalTranscript += SubmitFinalTranscript;
+            speech.TranscriptChanged += SubmitVoiceDelta;
             speech.Stopped += ClearVoiceQueue;
             network.Received += Receive;
             manager = rig.GetComponent<OVRManager>();
@@ -443,12 +443,16 @@ namespace Koekatamarin
             }
         }
 
-        public void SubmitFinalTranscript(string text)
+        public void SubmitVoiceDelta(string text)
         {
-            text = LanProtocol.Clean(text);
-            if (text.Length == 0) return;
-            if (voiceShots.Count == 8) { voiceShots.Dequeue(); feedback = "処理待ちが多いため古い発話を省略しました"; }
-            voiceShots.Enqueue(text);
+            while (!string.IsNullOrWhiteSpace(text))
+            {
+                string chunk = LanProtocol.Clean(text);
+                if (chunk.Length == 0) break;
+                if (voiceShots.Count == 8) { voiceShots.Dequeue(); feedback = "処理待ちが多いため古い発話を省略しました"; }
+                voiceShots.Enqueue(chunk);
+                text = text.Trim().Substring(chunk.Length);
+            }
         }
         void ClearVoiceQueue() { voiceShots.Clear(); }
         void Emit(string text)
@@ -525,7 +529,7 @@ namespace Koekatamarin
         {
             Font.textureRebuilt -= RefreshVoiceAtlas;
             if (runtimeVoiceMaterial != null) Destroy(runtimeVoiceMaterial);
-            if (speech != null) { speech.FinalTranscript -= SubmitFinalTranscript; speech.Stopped -= ClearVoiceQueue; }
+            if (speech != null) { speech.TranscriptChanged -= SubmitVoiceDelta; speech.Stopped -= ClearVoiceQueue; }
             if (display != null) display.RecenteredPose -= InvalidateAlignment;
             OVRManager.TrackingLost -= InvalidateAlignment;
             if (network != null) network.Received -= Receive;

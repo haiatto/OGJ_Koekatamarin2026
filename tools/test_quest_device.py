@@ -100,6 +100,13 @@ class DeviceChecks(unittest.TestCase):
         self.assertIn('app-memory.txt', report['errors'])
         self.assertEqual(report['speechDecode']['sampleCount'], 1)
 
+    def test_interim_logs_are_counted_without_treating_context_as_new_audio(self):
+        result = device.speech_metrics('ASR interim: audio=0.51s decode=0.03s model=ReazonSpeech\n'
+                                       'ASR interim: audio=1.02s decode=0.05s model=ReazonSpeech\n')
+        self.assertEqual(result['sampleCount'], 2)
+        self.assertAlmostEqual(result['decodeSecondsMedian'], .04)
+        self.assertIn('not new audio per decode', result['note'])
+
     def test_launch_uses_only_resolved_app_component(self):
         quest = device.Quest(Path('adb.exe'), 'quest')
         component = device.PACKAGE + '/com.unity3d.player.UnityPlayerGameActivity'

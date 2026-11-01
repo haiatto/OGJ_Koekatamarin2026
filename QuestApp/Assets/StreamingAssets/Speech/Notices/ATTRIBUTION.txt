@@ -10,10 +10,6 @@ https://github.com/modelscope/FunASR/blob/main/MODEL_LICENSE
 Snapshot retrieved 2026-11-01 is included as FunASR-MODEL-LICENSE.txt.
 This is a custom model license, not Apache-2.0 or MIT.
 
-Silero VAD: Silero Team, https://github.com/snakers4/silero-vad
-MIT license is included as Silero-VAD-LICENSE.txt.
-ONNX conversion distributed by k2-fsa/sherpa-onnx (asr-models release).
-
 sherpa-onnx v2.0.1: Xiaomi Corporation and contributors.
 https://github.com/k2-fsa/sherpa-onnx/tree/v2.0.1
 Apache-2.0 license is included as sherpa-onnx-LICENSE.txt.

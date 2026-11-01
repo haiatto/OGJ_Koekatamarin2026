@@ -83,7 +83,7 @@ namespace Koekatamarin.Editor
                     if (controls.Find("Entered IPv4").GetComponent<TMPro.TextMeshPro>().text != "192.168.1.20")
                         throw new System.InvalidOperationException("IP keypad entry/backspace failed");
                 }
-                else experience.SubmitFinalTranscript("声が文字になる！");
+                else experience.SubmitVoiceDelta("声が文字になる！");
                 fired = true;
                 firedAt = Time.time;
             }

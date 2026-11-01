@@ -141,7 +141,7 @@ class Quest:
 
 
 def speech_metrics(log: str) -> dict:
-    pairs = re.findall(r'ASR completed: audio=(\d+(?:[.,]\d+)?)s decode=(\d+(?:[.,]\d+)?)s', log)
+    pairs = re.findall(r'ASR (?:completed|interim): audio=(\d+(?:[.,]\d+)?)s decode=(\d+(?:[.,]\d+)?)s', log)
     samples = [(float(a.replace(',', '.')), float(d.replace(',', '.'))) for a, d in pairs]
     samples = [(a, d) for a, d in samples if a > 0 and math.isfinite(a) and math.isfinite(d)]
     times = sorted(d for _, d in samples)
@@ -150,7 +150,7 @@ def speech_metrics(log: str) -> dict:
         'decodeSecondsMedian': statistics.median(times) if times else None,
         'decodeSecondsP95': times[math.ceil(len(times) * .95) - 1] if times else None,
         'decodeToAudioRatioMedian': statistics.median(d / a for a, d in samples) if samples else None,
-        'note': 'Available app log samples only, rounded to 0.01s. Excludes VAD endpoint wait, queueing and display latency. Not end-to-end latency or a pass/fail result.',
+        'note': 'Available transcript-update log samples only, rounded to 0.01s. Interim audio durations are overlapping growing contexts, not new audio per decode. Excludes capture scheduling, queueing, display latency and any endpoint wait in older builds. Not end-to-end latency, sustained throughput, or a pass/fail result.',
     }
 
 

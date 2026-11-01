@@ -108,3 +108,14 @@ python -m unittest discover -s tools -p test_quest_device.py -v
 無線ADBで更新インストールし、versionName 0.7.0 / versionCode 7 とコールド起動の成功、アプリプロセスの継続を確認しました。ReazonSpeechの認識処理1件（処理時間0.07秒）がログにあります。同日、ユーザーがQuest 3で「みかちゃん-PB／ラノベPOP／Noto Sans JP」の3書体すべてを切り替え、文字が表示されることを確認しました。VRのWater4左右反射と持続性能は未検証です。
 
 [APK検査結果](validation/quest-0.7.0.json)、[表現の移植範囲と書体切替](legacy-appearance-port.ja.md)。Rawログは公開せずローカルの `.work/quest-device/` に保存します。
+
+
+## 0.8.0 導入記録（2026-11-02）
+
+原作の途中認識結果から共通の先頭部分を除いて発射する処理を移植し、Silero VADを撤去しました。実行時の音声認識と取得スクリプトからVADを外し、APKにモデルが残っていないことも検査しています。音声認識の方式と長い発話の区切りについては[音声処理の説明](offline-speech.ja.md)を参照してください。
+
+Unity EditModeテスト47件、導入ツール10件が成功しました。ReazonSpeechとSenseVoiceの実モデルに7.2秒の日本語音声を実時間相当で供給し、話し終わる前に途中結果が複数届くことを確認しています。APKは508,917,673 bytes、ARM64/IL2CPP、署名・Manifest・音声モデル6ファイル・各ライセンスの同梱検査に合格しました。
+
+無線ADBで更新インストールし、versionName 0.8.0 / versionCode 8 とコールド起動の成功、アプリプロセスの継続を確認しました。収集ログにはReazonSpeechの途中結果が2件（認識対象0.51秒／1.02秒、推論はいずれも0.10秒）あります。発話内容を保存していないため、意図した発話の認識や画面上の発射成功をログだけで断定しません。装着時のタイミング、静かなときの不要発射、長い発話、持続性能はユーザー確認待ちです。
+
+収集したログに `E Unity` はありません。以前の版にもあったOVRMetricsToolClientの `0-stub` に対するNumberFormatExceptionは残っています。[検査結果](validation/quest-0.8.0.json)。Rawログはローカル `.work/quest-device/20261101T181803.561212Z/`（UTC表記）に保存しています。

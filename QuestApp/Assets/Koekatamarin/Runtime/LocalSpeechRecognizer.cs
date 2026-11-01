@@ -15,10 +15,11 @@ namespace Koekatamarin
         public readonly struct Result
         {
             public readonly string Text;
+            public readonly string Delta;
             public readonly double DecodeSeconds;
             public readonly double AudioSeconds;
-            public Result(string text, double decode, double audio)
-            { Text = text; DecodeSeconds = decode; AudioSeconds = audio; }
+            public Result(string text, string delta, double decode, double audio)
+            { Text = text; Delta = delta; DecodeSeconds = decode; AudioSeconds = audio; }
         }
 
         readonly object gate = new object();
@@ -102,12 +103,8 @@ namespace Koekatamarin
                 }
                 config.ModelConfig.NumThreads = 2;
                 using var recognizer = new OfflineRecognizer(config);
-                var vadConfig = new VadModelConfig(true);
-                vadConfig.SileroVad.Model = Path.Combine(directory, SpeechModels.Files[2]);
-                vadConfig.SileroVad.MinSilenceDuration = .45f;
-                vadConfig.SileroVad.MinSpeechDuration = .20f;
-                vadConfig.SileroVad.MaxSpeechDuration = 6f;
-                using var vad = new VoiceActivityDetector(vadConfig, 12f);
+                var window = new IncrementalSpeechWindow();
+                var difference = new TranscriptDelta();
                 int current = -1;
                 Ready = true;
                 State = "話してください";
@@ -122,32 +119,40 @@ namespace Koekatamarin
                         incoming = generation;
                         samples = audio.Count > 0 ? audio.Dequeue() : null;
                     }
-                    if (current != incoming) { vad.Reset(); current = incoming; State = "話してください"; }
+                    if (current != incoming)
+                    { window.Reset(); difference.Reset(); current = incoming; State = "話してください"; }
                     if (samples == null) continue;
-                    vad.AcceptWaveform(samples);
-                    State = vad.IsSpeechDetected() ? "聞き取り中…" : "話してください";
-                    while (!vad.IsEmpty())
+                    var snapshot = window.Append(samples);
+                    if (snapshot != null)
                     {
-                        var segment = vad.Front();
-                        vad.Pop();
-                        if (segment.Samples.Length < 3200) continue;
-                        State = "文字に変換中…";
+                        // An entirely zero-filled buffer contains no microphone signal. Some
+                        // offline models invent text for it. This is exact digital zero, not
+                        // a volume threshold: every nonzero signal, however quiet, is decoded.
+                        if (Array.TrueForAll(snapshot, value => value == 0f))
+                        {
+                            if (window.Complete) { window.Reset(); difference.Reset(); }
+                            continue;
+                        }
+                        State = "聞き取り中…";
                         using var stream = recognizer.CreateStream();
-                        stream.AcceptWaveform(16000, segment.Samples);
+                        stream.AcceptWaveform(IncrementalSpeechWindow.SampleRate, snapshot);
                         var timer = Stopwatch.StartNew();
                         recognizer.Decode(stream);
-                        string text = LanProtocol.Clean(stream.Result.Text);
+                        // Do not truncate the hypothesis to the LAN packet size before diffing.
+                        string text = (stream.Result.Text ?? "").Trim();
                         timer.Stop();
                         lock (gate)
                         {
-                            if (stopping || current != generation) break;
-                            if (text.Length != 0)
+                            if (stopping) break;
+                            if (current != generation) continue;
+                            string delta = difference.Accept(text);
+                            if (delta.Length != 0)
                             {
                                 if (results.Count == 8) results.Dequeue();
-                                results.Enqueue(new Result(text, timer.Elapsed.TotalSeconds, segment.Samples.Length / 16000.0));
+                                results.Enqueue(new Result(text, delta, timer.Elapsed.TotalSeconds, snapshot.Length / 16000.0));
                             }
                         }
-                        State = "話してください";
+                        if (window.Complete) { window.Reset(); difference.Reset(); }
                     }
                 }
             }
