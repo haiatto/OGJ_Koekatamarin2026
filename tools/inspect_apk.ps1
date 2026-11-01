@@ -54,10 +54,14 @@ $java = Join-Path $AndroidPlayer 'OpenJDK/bin/java.exe'
 $signer = Join-Path $buildTools.FullName 'lib/apksigner.jar'
 & $java -jar $signer verify $apkPath
 if ($LASTEXITCODE -ne 0) { throw 'APK signature validation failed' }
+$apkStream = [IO.File]::OpenRead($apkPath)
+$apkHasher = [Security.Cryptography.SHA256]::Create()
+try { $apkDigest = [BitConverter]::ToString($apkHasher.ComputeHash($apkStream)).Replace('-', '').ToLowerInvariant() }
+finally { $apkHasher.Dispose(); $apkStream.Dispose() }
 $report = [ordered]@{
     apk = (Split-Path -Leaf $apkPath)
     bytes = (Get-Item -LiteralPath $apkPath).Length
-    sha256 = (Get-FileHash -LiteralPath $apkPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    sha256 = $apkDigest
     architecture = 'arm64-v8a'
     scriptingBackend = 'IL2CPP'
     signatureVerified = $true

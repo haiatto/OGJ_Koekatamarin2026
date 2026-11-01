@@ -1,6 +1,10 @@
 # Quest 3を接続できたときの確認手順
 
-現在のAPKの版と検査結果は[Questプロトタイプ](quest-prototype.ja.md)を参照してください。APK生成とWindows上のテストは成功していますが、以下の実機結果はまだありません。導入ツールはPython 3.12以降と、Unityに同梱されたAndroid SDKを使います。
+現在のAPKの版と検査結果は[Questプロトタイプ](quest-prototype.ja.md)を参照してください。導入ツールはPython 3.12以降と、Unityに同梱されたAndroid SDKを使います。
+
+2026-11-02にQuest 3（Android 14 / API 34）へ0.5.0をUSB経由で導入し、起動とアプリPIDに限定したログ取得に成功しました。APKのSHA256は `7edda2d26e3059d2308a7b8ff054d9d895c97706f392ef5ad9450b509a2a12cb`、導入済みパッケージはversionCode 5です。ログでパススルー初期化成功と `Boundary is invisible` イベントを確認し、2回のログ取得で同じプロセスが継続していました。画面・操作の目視確認、音声認識、スリープ復帰、VR切替、2台通信は未判定です。
+
+初回起動では `CreateAlignmentMarkers()` の `CreatePrimitive(Sphere)` に対して `SphereCollider` が存在しないエラーも記録されました。起動は継続していますが、Androidビルドでの型除去とマーカー表示を要調査です。またAssetPackManagerのクラス未検出とOVRMetricsToolのバージョン解析エラーがあります。ログ取得成功を全機能の動作合格とは扱いません。生ログと端末情報は `.work/quest-device/` に保存し、公開Gitには含めません。
 
 ## 導入と起動
 
@@ -80,4 +84,4 @@ python tools/quest_device.py collect
 python -m unittest discover -s tools -p test_quest_device.py -v
 ```
 
-9件のオフラインテストで、接続対象の曖昧さ、未承認端末、APK検査失敗、導入失敗、他アプリの起動拒否、ログのPID制限、プロセス変化、欠測値の扱いを確認しています。実際のQuestへの導入・起動・ログ取得の成功は未確認です。
+9件のオフラインテストで、接続対象の曖昧さ、未承認端末、APK検査失敗、導入失敗、他アプリの起動拒否、ログのPID制限、プロセス変化、欠測値の扱いを確認しています。実際のQuestへの導入・起動・ログ取得も上記の範囲で確認しました。
