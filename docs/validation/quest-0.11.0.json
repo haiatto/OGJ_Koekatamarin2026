@@ -51,8 +51,8 @@
   "installedVersionName": "0.11.0",
   "installedVersionCode": 12,
   "deviceLiveMeshUpdatesVerified": true,
-  "deviceNoiseSuppressionVerified": false,
-  "deviceMeterVerified": false,
+  "deviceNoiseSuppressionVerified": true,
+  "deviceMeterVerified": true,
   "minimumLevelDefaultRms": 0.004,
   "minimumLevelSettingsRms": [
     0,
@@ -66,5 +66,9 @@
   ],
   "preRollSeconds": 0.192,
   "releaseSeconds": 0.512,
-  "deviceValidationScope": "APK and Editor checks passed. Installed and launched on Quest 3 over Wi-Fi; version 0.11.0/code 12 and continued live mesh updates confirmed. No new recognition result in the initial short log interval; this alone does not prove noise suppression. Microphone meter, speech sensitivity and noise suppression await user verification."
+  "deviceValidationScope": "APK and Editor checks passed. Installed and launched on Quest 3 over Wi-Fi; version 0.11.0/code 12 and continued live mesh updates confirmed. On 2026-11-03 the user confirmed the meter responds and adjusting the threshold reduces unwanted shots. This is qualitative confirmation, not complete elimination or a measured false-positive rate. Quiet-speech sensitivity, persistence after restart and sustained performance remain unverified; deviceTested=false denotes the incomplete full acceptance suite.",
+  "userConfirmation": {
+    "date": "2026-11-03",
+    "statement": "ゲージが動き、調整すると不要な発射が減る"
+  }
 }
