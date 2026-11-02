@@ -55,8 +55,9 @@ try {
         'sherpa-onnx-LICENSE.txt', 'ONNX-Runtime-LICENSE.txt', 'ONNX-Runtime-ThirdPartyNotices.txt', 'ReazonSpeech-LICENSE.txt')) {
         if (!$zip.GetEntry('assets/Speech/Notices/' + $notice)) { throw "Speech license missing: $notice" }
     }
-    foreach ($notice in @('Mikachan-LICENSE.txt', 'LightNovelPOP-LICENSE.txt', 'NotoSans-LICENSE.txt')) {
-        if (!$zip.GetEntry('assets/Notices/' + $notice)) { throw "Font license missing: $notice" }
+    foreach ($notice in @('Mikachan-LICENSE.txt', 'LightNovelPOP-LICENSE.txt', 'NotoSans-LICENSE.txt',
+        'UXR-QuestMeshing-LICENSE.txt', 'UXR-QuestMeshing-ThirdPartyNotices.txt', 'Utils-Singleton-LICENSE.txt')) {
+        if (!$zip.GetEntry('assets/Notices/' + $notice)) { throw "Bundled license missing: $notice" }
     }
 }
 finally { $zip.Dispose() }
@@ -82,6 +83,7 @@ $report = [ordered]@{
     sileroVadBundled = $false
     speechLicensesBundled = $true
     fontLicensesBundled = $true
+    meshingLicensesBundled = $true
     deviceTested = $false
 }
 $report | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath ($apkPath + '.json') -Encoding utf8

@@ -1,0 +1,325 @@
+// Copyright 2025 URAV ADVANCED LEARNING SYSTEMS PRIVATE LIMITED
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using Unity.Collections;
+using UnityEngine;
+using UnityEngine.Rendering;
+using Uralstech.Utils.Singleton;
+
+#nullable enable
+namespace Uralstech.UXR.QuestMeshing
+{
+    /// <summary>
+    /// Specifies the eye for depth sampling operations.
+    /// </summary>
+    public enum DepthEye
+    {
+        /// <summary>
+        /// The left eye.
+        /// </summary>
+        Left = 0,
+
+        /// <summary>
+        /// The right eye.
+        /// </summary>
+        Right = 1
+    }
+
+    /// <summary>
+    /// A utility for asynchronously sampling world-space positions from normalized device coordinates (NDC) in the depth texture
+    /// using a compute shader. This class batches requests for efficiency and ensures main-thread safety for XR frame access.
+    /// </summary>
+    /// <remarks>
+    /// This sampler relies on <see cref="DepthPreprocessor"/> for depth texture and reprojection data. It is designed for CPU-side
+    /// depth queries, such as raycasting against environment depth or occlusion checks in custom XR interactions.
+    /// 
+    /// <para>
+    /// Usage Notes:
+    /// <list type="bullet">
+    /// <item><description>Requests are batched and dispatched at the end of the frame via <see cref="SampleBatcher"/> to minimize GPU overhead.</description></item>
+    /// <item><description>All public sampling methods require main-thread execution for XR subsystem access and yield to the main thread if called from elsewhere.</description></item>
+    /// <item><description>Invalid NDC positions (outside [0,1]) will return invalid results—validate with <see cref="IsValidNDC"/> before sampling.</description></item>
+    /// <item><description>Errors (e.g., GPU readback failures) return <see langword="null"/>; check return values before use.</description></item>
+    /// </list>
+    /// </para>
+    /// 
+    /// <example>
+    /// Single Sample:
+    /// <code><![CDATA[
+    /// if (CPUDepthSampler.Instance.ConvertToNDCPosition(worldPos, DepthEye.Left, out Vector2? ndc)
+    ///     && CPUDepthSampler.IsValidNDC(ndc.Value))
+    /// {
+    ///     Vector3? depthPos = await CPUDepthSampler.Instance.SampleDepthAsync(ndc.Value);
+    ///     if (depthPos.HasValue) { /* Process data */ }
+    /// }
+    /// ]]></code>
+    /// </example>
+    /// 
+    /// <example>
+    /// Batch Sample:
+    /// <code><![CDATA[
+    /// ArraySegment<Vector3>? results = await sampler.BatchSampleDepthAsync(new Vector2[] { ndc1, ndc2 });
+    /// if (results.HasValue)
+    /// {
+    ///     foreach (Vector3 pos in results.Value) { /* Process data */ }
+    /// }
+    /// ]]></code>
+    /// </example>
+    /// </remarks>
+    [AddComponentMenu("Uralstech/UXR/QuestMeshing/CPU Depth Sampler")]
+    public class CPUDepthSampler : DontCreateNewSingleton<CPUDepthSampler>
+    {
+        private static readonly Vector2 s_ndcHalf = Vector2.one * 0.5f;
+
+#pragma warning disable IDE1006 // Naming Styles
+        private static readonly int CS_PositionSampleRequests = Shader.PropertyToID("PositionSampleRequests");
+        private static readonly int CS_TotalPositionSampleRequests = Shader.PropertyToID("TotalPositionSampleRequests");
+        private static readonly int CS_NormalSampleRequests = Shader.PropertyToID("NormalSampleRequests");
+        private static readonly int CS_TotalNormalSampleRequests = Shader.PropertyToID("TotalNormalSampleRequests");
+#pragma warning restore IDE1006 // Naming Styles
+
+        [Tooltip("The compute shader containing the kernels for unprojecting NDC to world positions and normals.")]
+        [SerializeField] private ComputeShader _shader;
+
+        private DepthPreprocessor? _preprocessor;
+        private SampleBatcher _positionBatcher;
+        private SampleBatcher _normalBatcher;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            if (_shader == null)
+            {
+                Debug.LogError($"{nameof(CPUDepthSampler)}: Compute shader is not assigned. Sampling will fail.");
+                return;
+            }
+
+            _positionBatcher = new SampleBatcher(_shader, "SampleDepthPositionTexture", CS_TotalPositionSampleRequests, CS_PositionSampleRequests);
+            _normalBatcher = new SampleBatcher(_shader, "SampleDepthNormalTexture", CS_TotalNormalSampleRequests, CS_NormalSampleRequests);
+        }
+
+        protected void Start()
+        {
+            if (DepthPreprocessor.TryGetInstance(out _preprocessor))
+                return;
+            
+            Debug.LogError($"{nameof(CPUDepthSampler)}: No instance of {nameof(DepthPreprocessor)} found in scene.");
+            enabled = false;
+        }
+
+        /// <summary>
+        /// Converts a world-space position to normalized device coordinates (NDC) in the depth texture for the specified eye.
+        /// </summary>
+        /// <remarks>
+        /// This uses the current frame's reprojection matrix from <see cref="DepthPreprocessor.DepthReprojectionMatrices"/>.
+        /// </remarks>
+        /// <param name="worldPosition">The world-space position to project.</param>
+        /// <param name="eye">The eye for which to compute the NDC (affects reprojection matrix).</param>
+        /// <param name="ndcPosition">The resulting NDC position (x,y in [0,1] range), or <see langword="null"/> if preprocessor data is unavailable.</param>
+        /// <returns><see langword="true"/> if conversion succeeded (preprocessor data available); otherwise <see langword="false"/>.</returns>
+        public bool ConvertToNDCPosition(Vector3 worldPosition, DepthEye eye, [NotNullWhen(true)] out Vector2? ndcPosition)
+        {
+            if (_preprocessor == null || !_preprocessor.IsDataAvailable)
+            {
+                ndcPosition = null;
+                return false;
+            }
+
+            Vector4 hcsPos = _preprocessor.DepthReprojectionMatrices[(int)eye] * new Vector4(worldPosition.x, worldPosition.y, worldPosition.z, 1);
+            Vector2 clipNdc = (Vector3)hcsPos / hcsPos.w;
+            ndcPosition = (clipNdc * 0.5f) + s_ndcHalf;
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if an NDC position is valid for depth texture sampling.
+        /// </summary>
+        /// <param name="position">The NDC position to validate.</param>
+        /// <returns><see langword="true"/> if the position is within the [0,1] range for both x and y; otherwise <see langword="false"/>.</returns>
+        public static bool IsValidNDC(Vector2 position) => position.x is >= 0f and <= 1f && position.y is >= 0f and <= 1f;
+
+        /// <summary>
+        /// Asynchronously samples the world-space depth position at the given NDC coordinates in the depth texture.
+        /// </summary>
+        /// <remarks>
+        /// This queues the request and batches it with others for end-of-frame dispatch.
+        /// </remarks>
+        /// <param name="ndcPosition">The NDC position (x,y in [0,1] range) to sample.</param>
+        /// <returns>The world-space depth position at the sample point, or <see langword="null"/> if data is unavailable or sampling fails.</returns>
+        public async Awaitable<Vector3?> SamplePositionAsync(Vector2 ndcPosition)
+        {
+            if (_preprocessor == null || !_preprocessor.IsDataAvailable)
+                return null;
+
+            await Awaitable.MainThreadAsync();
+
+            int index = _positionBatcher.Queue(ndcPosition);
+            Vector3[]? results = await _positionBatcher.DispatchTask;
+            return results?[index];
+        }
+
+        /// <summary>
+        /// Asynchronously samples world-space depth positions for a batch of NDC coordinates in the depth texture.
+        /// </summary>
+        /// <remarks>
+        /// This queues the batch and dispatches at end-of-frame for efficiency. Ideal for multiple queries.
+        /// The returned segment shares the underlying results array (do not modify it externally).
+        /// </remarks>
+        /// <param name="ndcPositions">The enumerable of NDC positions (x,y in [0,1] range) to sample.</param>
+        /// <returns>An ArraySegment of results in input order, or <see langword="null"/> if data is unavailable or sampling fails.</returns>
+        public async Awaitable<ArraySegment<Vector3>?> SamplePositionsAsync(IEnumerable<Vector2> ndcPositions)
+        {
+            if (_preprocessor == null || !_preprocessor.IsDataAvailable)
+                return null;
+
+            await Awaitable.MainThreadAsync();
+
+            int index = _positionBatcher.QueueRange(ndcPositions, out int count);
+            Vector3[]? results = await _positionBatcher.DispatchTask;
+
+            return results != null ? new ArraySegment<Vector3>(results, index, count) : null;
+        }
+
+        /// <summary>
+        /// Asynchronously samples the world-space depth normal at the given NDC coordinates in the depth texture.
+        /// </summary>
+        /// <remarks>
+        /// This queues the request and batches it with others for end-of-frame dispatch.
+        /// </remarks>
+        /// <param name="ndcPosition">The NDC position (x,y in [0,1] range) to sample.</param>
+        /// <returns>The world-space depth normal at the sample point, or <see langword="null"/> if data is unavailable or sampling fails.</returns>
+        public async Awaitable<Vector3?> SampleNormalAsync(Vector2 ndcPosition)
+        {
+            if (_preprocessor == null || !_preprocessor.IsDataAvailable)
+                return null;
+
+            await Awaitable.MainThreadAsync();
+
+            int index = _normalBatcher.Queue(ndcPosition);
+            Vector3[]? results = await _normalBatcher.DispatchTask;
+            return results?[index];
+        }
+
+        /// <summary>
+        /// Asynchronously samples world-space depth normals for a batch of NDC coordinates in the depth texture.
+        /// </summary>
+        /// <remarks>
+        /// This queues the batch and dispatches at end-of-frame for efficiency. Ideal for multiple queries.
+        /// The returned segment shares the underlying results array (do not modify it externally).
+        /// </remarks>
+        /// <param name="ndcPositions">The enumerable of NDC positions (x,y in [0,1] range) to sample.</param>
+        /// <returns>An ArraySegment of results in input order, or <see langword="null"/> if data is unavailable or sampling fails.</returns>
+        public async Awaitable<ArraySegment<Vector3>?> SampleNormalsAsync(IEnumerable<Vector2> ndcPositions)
+        {
+            if (_preprocessor == null || !_preprocessor.IsDataAvailable)
+                return null;
+
+            await Awaitable.MainThreadAsync();
+
+            int index = _normalBatcher.QueueRange(ndcPositions, out int count);
+            Vector3[]? results = await _normalBatcher.DispatchTask;
+
+            return results != null ? new ArraySegment<Vector3>(results, index, count) : null;
+        }
+
+        /// <summary>
+        /// Batches requests to sample a texture on the GPU.
+        /// </summary>
+        private class SampleBatcher
+        {
+            private Task<Vector3[]?>? _currentTask;
+
+            /// <summary>
+            /// Gets the current dispatch task, or creates a new one.
+            /// </summary>
+            public Task<Vector3[]?> DispatchTask => _currentTask?.IsCompleted != false
+                ? _currentTask = DispatchAsync() : _currentTask;
+
+            private readonly List<Vector3> _requests = new();
+            private readonly ComputeShader _shader;
+            private readonly ComputeShaderKernel _kernel;
+            private readonly int _totalRequestsId, _requestsBufferId;
+
+            public SampleBatcher(ComputeShader shader, string kernelName, int totalRequestsId, int requestsBufferId)
+            {
+                _shader = shader;
+                _kernel = new ComputeShaderKernel(shader, kernelName);
+                _totalRequestsId = totalRequestsId;
+                _requestsBufferId = requestsBufferId;
+            }
+
+            /// <summary>
+            /// Enqueues a single sample request to the queue.
+            /// </summary>
+            /// <param name="ndc">The NDC position at which to sample.</param>
+            /// <returns>The index in the results array which will contain the sample.</returns>
+            public int Queue(Vector2 ndc)
+            {
+                _requests.Add(ndc);
+                return _requests.Count - 1;
+            }
+
+            /// <summary>
+            /// Enqueues multiple requests to the queue.
+            /// </summary>
+            /// <param name="ndcs">The NDC positions at which to sample.</param>
+            /// <param name="count">The number of enqueued sample requests.</param>
+            /// <returns>The index in the results array at which samples for this range.</returns>
+            public int QueueRange(IEnumerable<Vector2> ndcs, out int count)
+            {
+                int startIndex = _requests.Count;
+                foreach (Vector2 ndc in ndcs)
+                    _requests.Add(ndc);
+                
+                count = _requests.Count - startIndex;
+                return startIndex;
+            }
+
+            private async Task<Vector3[]?> DispatchAsync()
+            {
+                await Awaitable.EndOfFrameAsync();
+                _currentTask = null;
+
+                int count = _requests.Count;
+                if (count == 0)
+                    return null;
+
+                using GraphicsBuffer buffer = new(GraphicsBuffer.Target.Structured, count, sizeof(float) * 3);
+                buffer.SetData(_requests);
+                _requests.Clear();
+
+                _shader.SetInt(_totalRequestsId, count);
+                _kernel.SetBuffer(_requestsBufferId, buffer);
+                _kernel.Dispatch(count);
+
+                NativeArray<Vector3> resultsArray = new(count, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+                AsyncGPUReadbackRequest readbackRequest = await AsyncGPUReadback.RequestIntoNativeArrayAsync(ref resultsArray, buffer);
+                if (readbackRequest.hasError)
+                {
+                    resultsArray.Dispose();
+                    return null;
+                }
+
+                Vector3[] results = new Vector3[count];
+                resultsArray.CopyTo(results);
+                resultsArray.Dispose();
+                return results;
+            }
+        }
+    }
+}

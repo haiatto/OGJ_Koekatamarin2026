@@ -16,6 +16,7 @@ using UnityEngine.TextCore.LowLevel;
 using UnityEngine.XR.Management;
 using UnityEngine.XR.OpenXR;
 using Meta.XR.MRUtilityKit;
+using Uralstech.UXR.QuestMeshing;
 
 namespace Koekatamarin.Editor
 {
@@ -44,8 +45,8 @@ namespace Koekatamarin.Editor
             PlayerSettings.companyName = "haiatto";
             PlayerSettings.productName = "Koekatamarin 2026";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.haiatto.koekatamarin2026");
-            PlayerSettings.bundleVersion = "0.9.1";
-            PlayerSettings.Android.bundleVersionCode = 10;
+            PlayerSettings.bundleVersion = "0.10.0";
+            PlayerSettings.Android.bundleVersionCode = 11;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel32;
@@ -112,15 +113,8 @@ namespace Koekatamarin.Editor
             hands.right = CreateHand(rig, false, beam);
             app.hands = hands;
             var roomObject = new GameObject("Physical room");
-            var mruk = roomObject.AddComponent<MRUK>();
-            mruk.SceneSettings = new MRUK.MRUKSettings { LoadSceneOnStartup = false };
-            mruk.EnableWorldLock = false; // Keep rig motion exclusively owned by PlayerMotion.
-            var effect = roomObject.AddComponent<EffectMesh>();
-            effect.SpawnOnStart = MRUK.RoomFilter.None;
-            effect.Colliders = true; effect.HideMesh = true; effect.Layer = 9;
-            effect.MeshMaterial = panel;
             var roomCollision = roomObject.AddComponent<RoomCollision>();
-            roomCollision.scene = mruk; roomCollision.mesh = effect;
+            ConfigureLiveRoom(roomCollision, rig);
             app.roomCollision = roomCollision;
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
@@ -139,6 +133,37 @@ namespace Koekatamarin.Editor
             }
             material.SetColor("_BaseColor", color);
             return material;
+        }
+
+        static void ConfigureLiveRoom(RoomCollision room, OVRCameraRig rig)
+        {
+            const string shaders = "Packages/com.uralstech.uxr.questmeshing/Runtime/Shaders/";
+            var root = new GameObject("Live room depth");
+            root.transform.SetParent(room.transform, false);
+            root.SetActive(false); // Start only after XR and microphone/scene permissions are ready.
+            root.layer = 9;
+            var surface = root.AddComponent<MeshCollider>();
+            surface.enabled = false;
+            var depth = root.AddComponent<DepthPreprocessor>();
+            var mesher = root.AddComponent<DepthMesher>();
+            var pre = new SerializedObject(depth);
+            pre.FindProperty("_shader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<ComputeShader>(shaders + "DepthPreprocessor.compute");
+            pre.FindProperty("_cameraRig").objectReferenceValue = rig;
+            pre.ApplyModifiedPropertiesWithoutUndo();
+            var scan = new SerializedObject(mesher);
+            scan.FindProperty("_shader").objectReferenceValue = AssetDatabase.LoadAssetAtPath<ComputeShader>(shaders + "SurfaceNets.compute");
+            scan.FindProperty("_cameraRig").objectReferenceValue = rig;
+            scan.FindProperty("_meshColliderConsumer").objectReferenceValue = surface;
+            scan.FindProperty("_bakeNavMesh").boolValue = false;
+            scan.FindProperty("_volumeSize").vector3IntValue = new Vector3Int(160, 80, 160);
+            scan.FindProperty("_metersPerVoxel").floatValue = .08f;
+            scan.FindProperty("_minViewDistance").floatValue = .5f;
+            scan.FindProperty("_maxViewDistance").floatValue = 4f;
+            scan.FindProperty("_trianglesBudget").intValue = 65536;
+            scan.FindProperty("TargetVolumeUpdateRateHertz").floatValue = 10;
+            scan.FindProperty("TargetMeshRefreshRateHertz").floatValue = 2;
+            scan.ApplyModifiedPropertiesWithoutUndo();
+            room.liveRoot = root; room.depth = depth; room.mesher = mesher; room.surface = surface;
         }
 
         static OVRHand CreateHand(OVRCameraRig rig, bool left, Material material)
@@ -217,7 +242,8 @@ namespace Koekatamarin.Editor
             foreach (var feature in xr.GetFeatures<UnityEngine.XR.OpenXR.Features.OpenXRFeature>())
             {
                 if (feature.GetType().Name == "MetaQuestFeature" || feature.GetType().Name == "MetaXRFeature" ||
-                    feature.GetType().Name == "OculusTouchControllerProfile")
+                    feature.GetType().Name == "OculusTouchControllerProfile" || feature.GetType().Name == "AROcclusionFeature" ||
+                    feature.GetType().Name == "ARSessionFeature")
                     feature.enabled = true;
                 if (feature is UnityEngine.XR.OpenXR.Features.MetaQuestSupport.MetaQuestFeature quest)
                     quest.ForceRemoveInternetPermission = false;

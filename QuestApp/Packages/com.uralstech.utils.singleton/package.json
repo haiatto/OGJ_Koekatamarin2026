@@ -1,0 +1,25 @@
+{
+  "name": "com.uralstech.utils.singleton",
+  "displayName": "Utils.Singleton",
+  "description": "Utils.Singleton: Provides classes to make other classes singletons.",
+  "keywords": [
+    "Utilities",
+    "Utils"
+  ],
+  "version": "2.0.0",
+  "unity": "2022.3",
+  "hideInEditor": false,
+  "documentationUrl": "https://uralstech.github.io/Utils.Singleton/",
+  "changelogUrl": "https://github.com/Uralstech/Utils.Singleton/releases",
+  "licensesUrl": "https://github.com/Uralstech/Utils.Singleton/blob/master/LICENSE",
+  "license": "Apache-2.0",
+  "repository": {
+    "url": "https://github.com/Uralstech/Utils.Singleton",
+    "type": "git",
+    "revision": "65dabdaacc30b7aa847b6efc87d16ee9fb6598c4"
+  },
+  "author": {
+    "name": "Udayshankar Ravikumar",
+    "url": "https://github.com/Uralstech"
+  }
+}

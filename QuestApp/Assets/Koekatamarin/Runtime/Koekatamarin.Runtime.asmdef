@@ -1,5 +1,15 @@
 {
   "name": "Koekatamarin.Runtime",
-  "references": ["Unity.TextMeshPro", "Unity.InputSystem", "Oculus.VR", "SherpaOnnx", "meta.xr.mrutilitykit", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+  "references": [
+    "Unity.TextMeshPro",
+    "Unity.InputSystem",
+    "Oculus.VR",
+    "SherpaOnnx",
+    "meta.xr.mrutilitykit",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Core.Runtime",
+    "UXR.QuestMeshing",
+    "Utils.Singleton"
+  ],
   "autoReferenced": true
 }

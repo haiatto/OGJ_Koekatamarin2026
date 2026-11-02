@@ -180,7 +180,7 @@ namespace Koekatamarin
             Button("IPで接続", new Vector3(-.18f, -.42f, 0), ShowAddressPanel);
             modelLabel = Button("ReazonSpeech", new Vector3(.18f, -.42f, 0), () => speech.NextModel());
             Button("目印を確定", new Vector3(-.18f, -.55f, 0), CaptureAlignment);
-            Button("部屋読込", new Vector3(.18f, -.55f, 0), () => roomCollision?.RequestLoad());
+            Button("空間再取得", new Vector3(.18f, -.55f, 0), () => roomCollision?.RequestLoad());
             Button("左へ30度", new Vector3(-.18f, -.68f, 0), () => TurnFromPanel(-1));
             Button("右へ30度", new Vector3(.18f, -.68f, 0), () => TurnFromPanel(1));
             voiceFontLabel = Button("書体：" + VoiceFontName + " →", new Vector3(0, -.81f, 0), NextVoiceFont, width: .68f);
@@ -533,10 +533,10 @@ namespace Koekatamarin
         }
         public void ToggleRoomWire()
         {
-            if (roomCollision == null) { feedback = "空間線はQuest実機で部屋読込後に表示"; return; }
+            if (roomCollision == null) { feedback = "空間線はQuest実機で表示"; return; }
             roomCollision.SetWireVisible(!roomCollision.WireVisible);
             roomWireLabel.text = roomCollision.WireVisible ? "空間線 ON" : "空間線 OFF";
-            feedback = roomCollision.WireVisible ? "水色の線が部屋の当たり判定（MRのみ・部屋読込が必要）" : "空間線を非表示";
+            feedback = roomCollision.WireVisible ? "水色の線がライブの当たり判定 / ゆっくり周囲を見回してください" : "空間線を非表示";
         }
 
         void SelectVoiceFont(int index, bool save)

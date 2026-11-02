@@ -82,6 +82,15 @@ namespace Koekatamarin
             foreach (var entry in entries.Values) EdgeCount += (int)entry.lines.GetIndexCount(0) / 2;
         }
 
+        public void Invalidate(Collider collider)
+        {
+            if (collider == null || !entries.TryGetValue(collider, out var entry)) return;
+            Release(entry);
+            entries.Remove(collider);
+            EdgeCount = 0;
+            foreach (var current in entries.Values) EdgeCount += (int)current.lines.GetIndexCount(0) / 2;
+        }
+
         public static Mesh BuildLines(Collider collider)
         {
             Vector3[] vertices;
@@ -101,6 +110,10 @@ namespace Koekatamarin
                 var source = meshCollider.sharedMesh;
                 vertices = source.vertices;
                 int[] triangles = source.triangles;
+                // Live buffers reserve capacity; unused vertices must not affect line bounds.
+                int usedVertices = 0;
+                foreach (int index in triangles) usedVertices = Mathf.Max(usedVertices, index + 1);
+                if (usedVertices < vertices.Length) System.Array.Resize(ref vertices, usedVertices);
                 var edges = new HashSet<ulong>();
                 for (int i = 0; i < triangles.Length; i += 3)
                     for (int side = 0; side < 3; side++)

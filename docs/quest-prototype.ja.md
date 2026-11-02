@@ -1,4 +1,4 @@
-> 0.9.0更新: 空間コリジョンの半透明ワイヤーフレーム表示と文字サイズ設定を追加。[操作と当たり判定の説明](mr-collision-settings.ja.md)。
+> 最新版は0.10.0。UXR.QuestMeshingによるライブ空間メッシュを導入しました。52件のUnityテストとAPK検査を通過し、Quest 3への導入・起動・深度からの継続更新をログで確認済みです。形状の一致と衝突の装着確認は未判定。[検査結果](validation/quest-0.10.0.json)・[導入記録](device-validation.ja.md)・[操作](mr-collision-settings.ja.md)。以下は以前の版の記録を含みます。
 
 > 0.7.0更新: 原作の5層TextMeshとWater4を移植し、みかちゃん-PB・ラノベPOP・Noto Sans JPの切替を追加しています。[現在の表現と変更範囲](legacy-appearance-port.ja.md)を参照してください。以下は0.6.0以前の記録を含みます。
 

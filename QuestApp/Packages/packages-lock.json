@@ -44,7 +44,7 @@
     },
     "com.unity.collections": {
       "version": "6.6.0",
-      "depth": 2,
+      "depth": 1,
       "source": "builtin",
       "dependencies": {
         "com.unity.burst": "1.8.25",
@@ -88,7 +88,7 @@
     },
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.6",
-      "depth": 3,
+      "depth": 2,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -165,7 +165,7 @@
     },
     "com.unity.test-framework.performance": {
       "version": "6.6.0",
-      "depth": 3,
+      "depth": 2,
       "source": "builtin",
       "dependencies": {
         "com.unity.test-framework": "1.1.33",
@@ -292,9 +292,35 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.uralstech.utils.singleton": {
+      "version": "file:com.uralstech.utils.singleton",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "com.uralstech.uxr.questmeshing": {
+      "version": "file:com.uralstech.uxr.questmeshing",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.meta.xr.sdk.core": "78.0.0",
+        "com.unity.xr.meta-openxr": "2.3.0",
+        "com.unity.xr.openxr": "1.16.0",
+        "com.unity.xr.arfoundation": "6.3.0",
+        "com.unity.xr.management": "4.5.3",
+        "com.unity.collections": "2.6.3",
+        "com.unity.ai.navigation": "2.0.9",
+        "com.uralstech.utils.singleton": "2.0.0",
+        "com.unity.modules.xr": "1.0.0",
+        "com.unity.modules.androidjni": "1.0.0",
+        "com.unity.modules.physics": "1.0.0",
+        "com.unity.modules.ai": "1.0.0",
+        "com.unity.modules.ui": "1.0.0"
+      }
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
-      "depth": 2,
+      "depth": 1,
       "source": "builtin",
       "dependencies": {}
     },

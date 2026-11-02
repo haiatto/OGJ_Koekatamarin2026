@@ -8,6 +8,39 @@ namespace Koekatamarin.Tests
     public sealed class CollisionDisplayTests
     {
         [Test]
+        public void LiveMeshChangesInPlaceAndEmptyResultRemoveStaleWire()
+        {
+            var owner = new GameObject("Live room");
+            var obstacle = new GameObject("Live surface");
+            var source = new Mesh();
+            try
+            {
+                // The unused reserved vertex must not enlarge the rendered bounds.
+                source.vertices = new[] { Vector3.zero, Vector3.right, Vector3.up, Vector3.one * 999 };
+                source.triangles = new[] { 0, 1, 2 };
+                var collider = obstacle.AddComponent<MeshCollider>();
+                collider.sharedMesh = source;
+                var display = owner.AddComponent<CollisionWireframe>();
+                display.SetVisible(true);
+                display.Refresh(new[] { collider });
+                Assert.That(obstacle.GetComponentInChildren<MeshFilter>().sharedMesh.vertexCount, Is.EqualTo(3));
+                source.vertices = new[] { Vector3.zero, Vector3.right * 2, Vector3.up, Vector3.one * 999 };
+                display.Invalidate(collider);
+                display.Refresh(new[] { collider });
+                Assert.That(obstacle.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.size.x, Is.EqualTo(2));
+                collider.sharedMesh = null;
+                display.Invalidate(collider);
+                display.Refresh(new[] { collider });
+                Assert.That(display.EdgeCount, Is.Zero);
+                Assert.That(obstacle.GetComponentInChildren<MeshFilter>(), Is.Null);
+                collider.sharedMesh = source;
+                display.Refresh(new[] { collider });
+                Assert.That(display.EdgeCount, Is.EqualTo(3));
+            }
+            finally { Object.DestroyImmediate(owner); Object.DestroyImmediate(obstacle); Object.DestroyImmediate(source); }
+        }
+
+        [Test]
         public void MissingOrEmptyRoomMeshIsNotReportedAsDrawableAndCanRecover()
         {
             var go = new GameObject("Room awaiting mesh");

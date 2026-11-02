@@ -1,6 +1,16 @@
 {
   "name": "Koekatamarin.Tests",
-  "references": ["Koekatamarin.Runtime", "Unity.TextMeshPro"],
-  "includePlatforms": ["Editor"],
-  "optionalUnityReferences": ["TestAssemblies"]
+  "references": [
+    "Koekatamarin.Runtime",
+    "Unity.TextMeshPro",
+    "UXR.QuestMeshing",
+    "Oculus.VR",
+    "Utils.Singleton"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
 }

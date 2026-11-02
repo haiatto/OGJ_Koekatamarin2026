@@ -1,5 +1,22 @@
 {
   "name": "Koekatamarin.Editor",
-  "references": ["Koekatamarin.Runtime", "meta.xr.mrutilitykit", "Oculus.VR", "Oculus.VR.Editor", "Unity.TextMeshPro", "Unity.TextMeshPro.Editor", "Unity.RenderPipelines.Universal.Runtime", "Unity.XR.Management", "Unity.XR.Management.Editor", "Unity.XR.OpenXR", "Unity.XR.OpenXR.Editor", "Unity.XR.OpenXR.Features.MetaQuestSupport"],
-  "includePlatforms": ["Editor"]
+  "references": [
+    "Koekatamarin.Runtime",
+    "meta.xr.mrutilitykit",
+    "Oculus.VR",
+    "Oculus.VR.Editor",
+    "Unity.TextMeshPro",
+    "Unity.TextMeshPro.Editor",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.XR.Management",
+    "Unity.XR.Management.Editor",
+    "Unity.XR.OpenXR",
+    "Unity.XR.OpenXR.Editor",
+    "Unity.XR.OpenXR.Features.MetaQuestSupport",
+    "UXR.QuestMeshing",
+    "Utils.Singleton"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
 }
