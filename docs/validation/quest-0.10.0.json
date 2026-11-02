@@ -74,9 +74,19 @@
   "installedVersionCode": 11,
   "deviceLiveDepthVerified": true,
   "deviceLiveMeshUpdatesVerified": true,
-  "observedMeshUpdates": {"first": 1, "last": 33, "elapsedSeconds": 20.778, "firstTriangles": 1824, "lastTriangles": 4950},
-  "deviceRoomCollisionVerified": false,
-  "deviceWireframeVerified": false,
+  "observedMeshUpdates": {
+    "first": 1,
+    "last": 33,
+    "elapsedSeconds": 20.778,
+    "firstTriangles": 1824,
+    "lastTriangles": 4950
+  },
+  "deviceRoomCollisionVerified": true,
+  "deviceWireframeVerified": true,
   "sustainedPerformanceVerified": false,
-  "deviceValidationScope": "Installed and launched on Quest 3 over Wi-Fi. Runtime logs confirm 320x320 depth preprocessing and repeated mesh/collider publication alongside ReazonSpeech. Visual alignment, wire rendering, collision behavior, moving-object cleanup and sustained performance remain unverified. deviceTested=false means the complete visual acceptance suite has not passed."
+  "deviceValidationScope": "Installed and launched on Quest 3 over Wi-Fi. Runtime logs confirm depth preprocessing and repeated mesh/collider publication alongside ReazonSpeech. User confirmed visible wireframe and words colliding on 2026-11-03. Alignment accuracy, moving-object cleanup, suspend/resume and sustained performance remain unverified. deviceTested=false means the full acceptance suite has not passed.",
+  "userConfirmation": {
+    "date": "2026-11-03",
+    "statement": "線が見えて、文字も当たる"
+  }
 }
