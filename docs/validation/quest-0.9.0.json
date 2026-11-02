@@ -61,8 +61,13 @@
   "voiceSizeDefault": 1,
   "voiceSizeAppliesTo": "New local and received words on this device, visual and collider scale; saved locally",
   "speechProcessingChanged": false,
-  "deviceInstalled": false,
-  "deviceInstallNote": "Wireless ADB went offline during install; installation is not confirmed.",
+  "deviceInstalled": true,
+  "deviceInstallNote": "Wi-Fi ADB transfer succeeded after the headset was awakened; versionName 0.9.0 and versionCode 9 verified. Launch succeeded on retry after an initial timeout.",
   "deviceWireframeUserConfirmed": false,
-  "deviceVoiceSizeUserConfirmed": false
+  "deviceVoiceSizeUserConfirmed": false,
+  "deviceInstalledVersion": "0.9.0",
+  "deviceInstalledBuildCode": 9,
+  "deviceLaunchSucceeded": true,
+  "deviceSameProcessStillRunning": true,
+  "deviceStartupNote": "Activity launch and persistent process confirmed. First captured logs show focus loss/pause before room load; room readiness and headset display still need confirmation."
 }
