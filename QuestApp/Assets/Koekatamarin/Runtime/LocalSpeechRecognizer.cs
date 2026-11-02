@@ -30,6 +30,7 @@ namespace Koekatamarin
         readonly SpeechModels.Model model;
         int generation;
         bool stopping;
+        float minimumLevel = SpeechAmplitudeGate.Threshold(SpeechAmplitudeGate.DefaultSetting);
         public volatile bool Ready;
         public volatile bool Finished;
         public volatile string Error;
@@ -51,6 +52,15 @@ namespace Koekatamarin
         public void Reset()
         {
             lock (gate) { generation++; audio.Clear(); results.Clear(); Monitor.PulseAll(gate); }
+        }
+
+        public void SetMinimumLevel(float level)
+        {
+            lock (gate)
+            {
+                minimumLevel = level;
+                generation++; audio.Clear(); results.Clear(); Monitor.PulseAll(gate);
+            }
         }
 
         public void Accept(float[] mono16k)
@@ -105,46 +115,23 @@ namespace Koekatamarin
                 using var recognizer = new OfflineRecognizer(config);
                 var window = new IncrementalSpeechWindow();
                 var difference = new TranscriptDelta();
+                var levelGate = new SpeechAmplitudeGate();
                 int current = -1;
-                Ready = true;
-                State = "話してください";
-                while (true)
+                void Decode(float[] snapshot)
                 {
-                    float[] samples;
-                    int incoming;
-                    lock (gate)
+                    if (snapshot == null) return;
+                    if (!Array.TrueForAll(snapshot, value => value == 0f))
                     {
-                        while (!stopping && audio.Count == 0 && current == generation) Monitor.Wait(gate);
-                        if (stopping) break;
-                        incoming = generation;
-                        samples = audio.Count > 0 ? audio.Dequeue() : null;
-                    }
-                    if (current != incoming)
-                    { window.Reset(); difference.Reset(); current = incoming; State = "話してください"; }
-                    if (samples == null) continue;
-                    var snapshot = window.Append(samples);
-                    if (snapshot != null)
-                    {
-                        // An entirely zero-filled buffer contains no microphone signal. Some
-                        // offline models invent text for it. This is exact digital zero, not
-                        // a volume threshold: every nonzero signal, however quiet, is decoded.
-                        if (Array.TrueForAll(snapshot, value => value == 0f))
-                        {
-                            if (window.Complete) { window.Reset(); difference.Reset(); }
-                            continue;
-                        }
                         State = "聞き取り中…";
                         using var stream = recognizer.CreateStream();
                         stream.AcceptWaveform(IncrementalSpeechWindow.SampleRate, snapshot);
                         var timer = Stopwatch.StartNew();
                         recognizer.Decode(stream);
-                        // Do not truncate the hypothesis to the LAN packet size before diffing.
                         string text = (stream.Result.Text ?? "").Trim();
                         timer.Stop();
                         lock (gate)
                         {
-                            if (stopping) break;
-                            if (current != generation) continue;
+                            if (stopping || current != generation) return;
                             string delta = difference.Accept(text);
                             if (delta.Length != 0)
                             {
@@ -152,8 +139,34 @@ namespace Koekatamarin
                                 results.Enqueue(new Result(text, delta, timer.Elapsed.TotalSeconds, snapshot.Length / 16000.0));
                             }
                         }
-                        if (window.Complete) { window.Reset(); difference.Reset(); }
                     }
+                    if (window.Complete) { window.Reset(); difference.Reset(); }
+                }
+                void Feed(float[] block) { Decode(window.Append(block)); }
+                void EndUtterance()
+                {
+                    Decode(window.Flush());
+                    window.Reset(); difference.Reset(); State = "音量待ち";
+                }
+                Ready = true;
+                State = "話してください";
+                while (true)
+                {
+                    float[] samples;
+                    int incoming;
+                    float threshold;
+                    lock (gate)
+                    {
+                        while (!stopping && audio.Count == 0 && current == generation) Monitor.Wait(gate);
+                        if (stopping) break;
+                        incoming = generation;
+                        threshold = minimumLevel;
+                        samples = audio.Count > 0 ? audio.Dequeue() : null;
+                    }
+                    if (current != incoming)
+                    { window.Reset(); difference.Reset(); levelGate.Reset(); current = incoming; State = "話してください"; }
+                    if (samples == null) continue;
+                    levelGate.Process(samples, threshold, Feed, EndUtterance);
                 }
             }
             catch (Exception e) { Error = e.GetType().Name + ": " + e.Message; State = "音声認識の初期化または処理に失敗"; }

@@ -34,9 +34,28 @@ namespace Koekatamarin
         public SpeechModels.Model Model { get; private set; } = SpeechModels.Model.ReazonSpeech;
         public string ModelName => SpeechModels.Name(Model);
         public float Level { get; private set; }
+        const string MinimumLevelPreference = "Koekatamarin.MinimumVoiceLevel";
+        public int MinimumLevelSetting { get; private set; } = SpeechAmplitudeGate.DefaultSetting;
+        public float MinimumLevel => SpeechAmplitudeGate.Threshold(MinimumLevelSetting);
+        public string MinimumLevelLabel => MinimumLevelSetting == 0 ? "OFF" : SpeechAmplitudeGate.Decibels(MinimumLevel).ToString("F0") + " dB";
+        public float MeterLevel { get; private set; }
         public string Status { get; private set; } = "音声入力 停止";
         public bool Running => requested;
         public bool IsCapturing => clip != null;
+
+        void Awake()
+        {
+            MinimumLevelSetting = Mathf.Clamp(PlayerPrefs.GetInt(MinimumLevelPreference, SpeechAmplitudeGate.DefaultSetting), 0, SpeechAmplitudeGate.SettingCount - 1);
+        }
+        public void AdjustMinimumLevel(int direction)
+        {
+            MinimumLevelSetting = Mathf.Clamp(MinimumLevelSetting + direction, 0, SpeechAmplitudeGate.SettingCount - 1);
+            recognizer?.SetMinimumLevel(MinimumLevel);
+            lastText = "";
+            Stopped?.Invoke(); // Discard queued shots recognized before the setting changed.
+            PlayerPrefs.SetInt(MinimumLevelPreference, MinimumLevelSetting);
+            PlayerPrefs.Save();
+        }
 
         public void Toggle()
         {
@@ -134,6 +153,7 @@ namespace Koekatamarin
             input = new float[512 * clip.channels];
             readPosition = 0;
             recognizer.Reset();
+            recognizer.SetMinimumLevel(MinimumLevel);
             resampler = new SpeechResampler(clip.frequency, clip.channels, recognizer.Accept);
             started = lastRead = Time.realtimeSinceStartup;
             microphoneStarted = false;
@@ -162,6 +182,7 @@ namespace Koekatamarin
             }
             lastRead = now;
             int available = (position - readPosition + clip.samples) % clip.samples;
+            float peak = 0;
             while (available >= 512)
             {
                 if (!clip.GetData(input, readPosition)) { Fail("マイクの読み取りに失敗"); return; }
@@ -170,8 +191,10 @@ namespace Koekatamarin
                 float sum = 0;
                 foreach (float sample in input) sum += sample * sample;
                 Level = Mathf.Sqrt(sum / input.Length);
+                peak = Mathf.Max(peak, Level);
                 resampler.Push(input);
             }
+            MeterLevel = Mathf.Max(peak, MeterLevel * Mathf.Exp(-Time.unscaledDeltaTime * 8));
             while (recognizer.TryRead(out var result))
             {
                 lastText = result.Text;
@@ -195,7 +218,7 @@ namespace Koekatamarin
             if (clip != null) { Microphone.End(null); Destroy(clip); }
             clip = null; input = null; resampler = null;
             recognizer?.Reset();
-            lastText = ""; Level = 0;
+            lastText = ""; Level = 0; MeterLevel = 0;
             Status = "音声入力 停止";
             Stopped?.Invoke();
         }

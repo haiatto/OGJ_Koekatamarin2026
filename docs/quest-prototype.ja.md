@@ -1,4 +1,4 @@
-> 最新版は0.10.0。UXR.QuestMeshingによるライブ空間メッシュを導入しました。52件のUnityテストとAPK検査を通過し、Quest 3への導入・起動・深度からの継続更新をログで確認済みです。ユーザーが空間線の表示と文字の衝突を装着確認済み。形状精度・動いた物の残像除去・継続負荷は未判定。[検査結果](validation/quest-0.10.0.json)・[導入記録](device-validation.ja.md)・[操作](mr-collision-settings.ja.md)。以下は以前の版の記録を含みます。
+> 最新版は0.11.0。最低音量の変更・保存と入力ゲージを追加。56件のUnityテスト・Editor描画・APK検査を通過し、Quest 3へ導入・起動済みです。[音量の操作](offline-speech.ja.md)・[検査結果](validation/quest-0.11.0.json)。0.10.0のライブ空間線と文字の衝突はユーザーが装着確認済み。[導入記録](device-validation.ja.md)・[空間の操作](mr-collision-settings.ja.md)。以下は以前の版の記録を含みます。
 
 > 0.7.0更新: 原作の5層TextMeshとWater4を移植し、みかちゃん-PB・ラノベPOP・Noto Sans JPの切替を追加しています。[現在の表現と変更範囲](legacy-appearance-port.ja.md)を参照してください。以下は0.6.0以前の記録を含みます。
 

@@ -82,6 +82,16 @@ namespace Koekatamarin.Editor
                 if (experience.VoiceSize != initialSize)
                     throw new System.InvalidOperationException("Voice size cycle did not return to initial selection");
                 Debug.Log("KOEKATAMARIN_COLLISION_LAYERS_AND_SIZE_CYCLE_OK");
+                var speech = experience.GetComponent<SpeechInput>();
+                int initialLevel = speech.MinimumLevelSetting;
+                main.Find("最低音量 ＋").GetComponent<PanelAction>().Invoke();
+                if (speech.MinimumLevelSetting != Mathf.Min(initialLevel + 1, SpeechAmplitudeGate.SettingCount - 1))
+                    throw new System.InvalidOperationException("Minimum microphone level control failed");
+                experience.AdjustMinimumLevel(initialLevel - speech.MinimumLevelSetting);
+                foreach (string name in new[] { "Microphone background", "Microphone level", "Microphone threshold" })
+                    if (main.Find(name).GetComponent<Collider>() != null)
+                        throw new System.InvalidOperationException("Microphone gauge must not intercept pointing or collide");
+                Debug.Log("KOEKATAMARIN_MICROPHONE_CONTROLS_OK");
                 if (ip)
                 {
                     // A documentation preview must not publish the workstation's real interface addresses.

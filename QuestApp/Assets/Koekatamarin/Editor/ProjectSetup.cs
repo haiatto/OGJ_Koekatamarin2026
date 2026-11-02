@@ -45,8 +45,8 @@ namespace Koekatamarin.Editor
             PlayerSettings.companyName = "haiatto";
             PlayerSettings.productName = "Koekatamarin 2026";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.haiatto.koekatamarin2026");
-            PlayerSettings.bundleVersion = "0.10.0";
-            PlayerSettings.Android.bundleVersionCode = 11;
+            PlayerSettings.bundleVersion = "0.11.0";
+            PlayerSettings.Android.bundleVersionCode = 12;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel32;

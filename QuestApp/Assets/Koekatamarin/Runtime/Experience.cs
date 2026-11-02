@@ -54,6 +54,10 @@ namespace Koekatamarin
         TextMeshPro voiceFontLabel;
         TextMeshPro voiceSizeLabel;
         TextMeshPro roomWireLabel;
+        TextMeshPro microphoneLabel;
+        Transform microphoneFill, microphoneThreshold;
+        Renderer microphoneRenderer;
+        MaterialPropertyBlock meterColors;
         LineRenderer beam;
         Transform originMarker;
         LineRenderer directionMarker;
@@ -159,12 +163,17 @@ namespace Koekatamarin
 
         void BuildPanel()
         {
+            meterColors = new MaterialPropertyBlock();
             panel = new GameObject("Control panel").transform;
             panel.SetParent(rig.transform);
             mainControls = new GameObject("Main controls").transform;
             mainControls.SetParent(panel, false);
             Label(panel, "コエカタマリン 2026", new Vector3(0, .33f, 0), .65f, new Vector2(1.2f, .12f));
-            Label(panel, "声を文字にして飛ばそう", new Vector3(0, .24f, 0), .32f, new Vector2(1.2f, .1f));
+            microphoneLabel = Label(mainControls, "", new Vector3(0, .25f, -.02f), .26f, new Vector2(1.2f, .06f));
+            MeterBar("Microphone background", new Vector3(0, .195f, 0), new Vector3(.68f, .018f, .008f), new Color(.08f, .12f, .16f));
+            microphoneFill = MeterBar("Microphone level", new Vector3(0, .195f, -.008f), new Vector3(.001f, .018f, .008f), Color.cyan);
+            microphoneRenderer = microphoneFill.GetComponent<Renderer>();
+            microphoneThreshold = MeterBar("Microphone threshold", new Vector3(0, .195f, -.016f), new Vector3(.005f, .036f, .008f), Color.yellow);
             roomLabel = Button("部屋 1 →", new Vector3(-.18f, .10f, 0), () =>
             {
                 network.Disconnect(); InvalidateAlignment(); room = room % 9 + 1; roomLabel.text = "部屋 " + room + " →";
@@ -186,9 +195,44 @@ namespace Koekatamarin
             voiceFontLabel = Button("書体：" + VoiceFontName + " →", new Vector3(0, -.81f, 0), NextVoiceFont, width: .68f);
             roomWireLabel = Button("空間線 OFF", new Vector3(-.18f, -.94f, 0), ToggleRoomWire);
             voiceSizeLabel = Button(SizeLabel(), new Vector3(.18f, -.94f, 0), NextVoiceSize);
-            status = Label(mainControls, "準備中", new Vector3(0, -1.24f, -.02f), .26f, new Vector2(1.4f, .45f));
+            Button("最低音量 −", new Vector3(-.18f, -1.07f, 0), () => AdjustMinimumLevel(-1));
+            Button("最低音量 ＋", new Vector3(.18f, -1.07f, 0), () => AdjustMinimumLevel(1));
+            status = Label(mainControls, "準備中", new Vector3(0, -1.37f, -.02f), .26f, new Vector2(1.4f, .45f));
             status.textWrappingMode = TextWrappingModes.Normal;
             BuildAddressPanel();
+        }
+
+        Transform MeterBar(string name, Vector3 position, Vector3 scale, Color color)
+        {
+            var bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            bar.name = name;
+            Destroy(bar.GetComponent<BoxCollider>());
+            bar.transform.SetParent(mainControls, false);
+            bar.transform.localPosition = position;
+            bar.transform.localScale = scale;
+            var renderer = bar.GetComponent<Renderer>();
+            renderer.sharedMaterial = beamMaterial;
+            meterColors.SetColor("_BaseColor", color);
+            renderer.SetPropertyBlock(meterColors);
+            return bar.transform;
+        }
+
+        public void AdjustMinimumLevel(int direction)
+        {
+            speech.AdjustMinimumLevel(direction);
+            feedback = "最低音量 " + speech.MinimumLevelLabel + " / 無言時のゲージより黄色い線を上げて調整";
+        }
+
+        void UpdateMicrophoneMeter()
+        {
+            float amount = SpeechAmplitudeGate.MeterPosition(speech.MeterLevel);
+            microphoneFill.localScale = new Vector3(Mathf.Max(.001f, .68f * amount), .018f, .008f);
+            microphoneFill.localPosition = new Vector3(-.34f + .34f * amount, .195f, -.008f);
+            microphoneThreshold.gameObject.SetActive(speech.MinimumLevel > 0);
+            microphoneThreshold.localPosition = new Vector3(-.34f + .68f * SpeechAmplitudeGate.MeterPosition(speech.MinimumLevel), .195f, -.016f);
+            meterColors.SetColor("_BaseColor", speech.IsCapturing && speech.MeterLevel >= speech.MinimumLevel ? Color.green : Color.cyan);
+            microphoneRenderer.SetPropertyBlock(meterColors);
+            microphoneLabel.text = "入力 " + (speech.IsCapturing ? SpeechAmplitudeGate.Decibels(speech.MeterLevel).ToString("F0") + " dB" : "OFF") + " / 最低音量 " + speech.MinimumLevelLabel;
         }
 
         void BuildAddressPanel()
@@ -394,6 +438,7 @@ namespace Koekatamarin
         void Update()
         {
             if (network == null || panel == null || beam == null) return;
+            UpdateMicrophoneMeter();
             if (mr && !switching && !applicationPaused && boundaryGate.Tick(Time.realtimeSinceStartup, OVRManager.IsInsightPassthroughInitialized()))
                 manager.shouldBoundaryVisibilityBeSuppressed = true;
             bool pressed = OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch);

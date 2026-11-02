@@ -2,8 +2,8 @@ using System;
 
 namespace Koekatamarin
 {
-    // A bounded growing recording for non-streaming models. No VAD or amplitude gate:
-    // decode every 0.512 s, including silence. Start a new context at 12.288 s.
+    // A bounded growing recording for non-streaming models, after the optional level gate.
+    // Decode every 0.512 s. Start a new context at 12.288 s.
     public sealed class IncrementalSpeechWindow
     {
         public const int SampleRate = 16000;
@@ -20,6 +20,14 @@ namespace Koekatamarin
             Array.Copy(block, 0, samples, count, block.Length);
             count += block.Length;
             if (count % StepSamples != 0) return null;
+            var snapshot = new float[count];
+            Array.Copy(samples, snapshot, count);
+            return snapshot;
+        }
+
+        public float[] Flush()
+        {
+            if (count == 0 || count % StepSamples == 0) return null;
             var snapshot = new float[count];
             Array.Copy(samples, snapshot, count);
             return snapshot;
