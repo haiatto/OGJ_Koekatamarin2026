@@ -41,3 +41,11 @@
 0.9.1では未取得状態をON表示だけで済ませず、形状・辺数と読み込み状態を表示・ログ記録する。またMRUKが空のMeshオブジェクトを返す場合、グローバルメッシュありと判定せず壁・床・家具の形状へフォールバックする。線のデータがない状態から後で取得できた場合の復帰をテストする。
 
 保存された部屋を位置特定できない原因が解消したとはまだ確認していない。部屋をスキャンした場所で周囲を見回してから「部屋読込」で再試行し、必要に応じてQuest側の空間設定を確認する。保存データの削除・再スキャンは自動では行わない。
+
+## 事前スキャンはQuest全体の必須条件ではない
+
+2026-11-03に公式資料を再確認。現在のアプリはScene Modelから部屋のColliderを作る方式なので、Space Setupで得たデータが必要。これは採用した方式の条件であり、Quest 3のMR全体で事前スキャンが必須という意味ではない。[Meta: Manage and query scene data](https://developers.meta.com/vr/documentation/unity/unity-mr-utility-kit-manage-scene-data/)。
+
+Quest 3ではEnvironment Raycastingでライブの深度情報に対する交点・面の向きを取得できる。現在のMRUKにもEnvironmentRaycastManagerが含まれるが、このアプリではまだ使用していない。カメラ範囲外の判定には制約があり、Unityの部屋全体のMeshColliderが自動で生成される機能ではない。[Meta: Environment Raycasting](https://developers.meta.com/vr/documentation/unity/unity-mr-utility-kit-environment-raycast/)。
+
+スキャン不要を基本とするなら、ライブ環境の問い合わせ結果を声の衝突・反射へ接続する追加実装と実機検証が必要。部屋全体を保存して使う方式と同じ範囲・物理挙動を保証しない。原作の固定BoxColliderとRigidbodyの挙動をどの程度保てるかを評価し、保存済み部屋方式との切替・併用を検討する。Depth API自体が通常の物理Colliderを提供するとは説明しない。[Meta: Depth API Overview](https://developers.meta.com/vr/documentation/unity/unity-depthapi-overview/)。

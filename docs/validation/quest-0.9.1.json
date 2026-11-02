@@ -52,8 +52,12 @@
   "emptyGlobalMeshFallbackImplemented": true,
   "wireframeReadinessAndCountsImplemented": true,
   "roomLoadDiagnosticsImplemented": true,
-  "deviceInstalled": false,
-  "deviceInstallNote": "Wi-Fi ADB connection timed out; 0.9.1 has not been installed or tested on device.",
+  "deviceInstalled": true,
+  "deviceInstallNote": "2026-11-03: user woke Quest; Wi-Fi install succeeded. Installed versionName 0.9.1 and versionCode 10, Activity launch and app process confirmed.",
   "rootCauseResolved": false,
-  "previousDeviceEvidence": "0.9.0: user reports no wireframe; native AnchorFramework repeatedly reports all anchors in the room could not be located."
+  "previousDeviceEvidence": "0.9.0: user reports no wireframe; native AnchorFramework repeatedly reports all anchors in the room could not be located.",
+  "deviceInstalledVersion": "0.9.1",
+  "deviceInstalledBuildCode": 10,
+  "deviceLaunchSucceeded": true,
+  "deviceSameProcessStillRunning": true
 }
