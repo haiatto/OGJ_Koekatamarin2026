@@ -14,6 +14,10 @@ namespace Koekatamarin
         Font voiceFont;
         int voiceFontIndex;
         const string VoiceFontPreference = "Koekatamarin.VoiceFont";
+        const string VoiceSizePreference = "Koekatamarin.VoiceSize";
+        static readonly float[] voiceSizes = { .25f, .5f, .75f, 1f, 1.5f, 2f };
+        int voiceSizeIndex = 3;
+        public float VoiceSize => voiceSizes[voiceSizeIndex];
         public string VoiceFontName => voiceFonts[voiceFontIndex].title;
         public Material voiceMaterial;
         Material runtimeVoiceMaterial;
@@ -48,6 +52,8 @@ namespace Koekatamarin
         TextMeshPro alignmentLabel;
         TextMeshPro modelLabel;
         TextMeshPro voiceFontLabel;
+        TextMeshPro voiceSizeLabel;
+        TextMeshPro roomWireLabel;
         LineRenderer beam;
         Transform originMarker;
         LineRenderer directionMarker;
@@ -87,6 +93,8 @@ namespace Koekatamarin
             string savedFont = PlayerPrefs.GetString(VoiceFontPreference, "mikachan-pb");
             int savedIndex = System.Array.FindIndex(voiceFonts, choice => choice.id == savedFont);
             SelectVoiceFont(Mathf.Max(0, savedIndex), false);
+            int sizeIndex = System.Array.IndexOf(voiceSizes, PlayerPrefs.GetFloat(VoiceSizePreference, 1f));
+            voiceSizeIndex = sizeIndex >= 0 ? sizeIndex : 3;
             for (int i = 0; i < pool.Length; i++)
             {
                 pool[i] = new GameObject("Word " + i).AddComponent<WordProjectile>();
@@ -176,7 +184,9 @@ namespace Koekatamarin
             Button("左へ30度", new Vector3(-.18f, -.68f, 0), () => TurnFromPanel(-1));
             Button("右へ30度", new Vector3(.18f, -.68f, 0), () => TurnFromPanel(1));
             voiceFontLabel = Button("書体：" + VoiceFontName + " →", new Vector3(0, -.81f, 0), NextVoiceFont, width: .68f);
-            status = Label(mainControls, "準備中", new Vector3(0, -1.11f, -.02f), .26f, new Vector2(1.4f, .45f));
+            roomWireLabel = Button("空間線 OFF", new Vector3(-.18f, -.94f, 0), ToggleRoomWire);
+            voiceSizeLabel = Button(SizeLabel(), new Vector3(.18f, -.94f, 0), NextVoiceSize);
+            status = Label(mainControls, "準備中", new Vector3(0, -1.24f, -.02f), .26f, new Vector2(1.4f, .45f));
             status.textWrappingMode = TextWrappingModes.Normal;
             BuildAddressPanel();
         }
@@ -487,6 +497,7 @@ namespace Koekatamarin
         {
             var head = rig.centerEyeAnchor;
             var projectile = pool[projectileIndex++ % pool.Length];
+            projectile.SetSize(VoiceSize);
             projectile.Launch(text, pose, style);
         }
         void OnApplicationPause(bool paused)
@@ -504,6 +515,23 @@ namespace Koekatamarin
         }
         public void NextVoiceFont()
         { SelectVoiceFont((voiceFontIndex + 1) % voiceFonts.Length, true); }
+
+        string SizeLabel() => "文字 " + (VoiceSize * 100).ToString("0") + "% →";
+        public void NextVoiceSize()
+        {
+            voiceSizeIndex = (voiceSizeIndex + 1) % voiceSizes.Length;
+            if (voiceSizeLabel != null) voiceSizeLabel.text = SizeLabel();
+            PlayerPrefs.SetFloat(VoiceSizePreference, VoiceSize);
+            PlayerPrefs.Save();
+            feedback = "次に飛ぶ文字から適用（この端末の表示・当たり判定）";
+        }
+        public void ToggleRoomWire()
+        {
+            if (roomCollision == null) { feedback = "空間線はQuest実機で部屋読込後に表示"; return; }
+            roomCollision.SetWireVisible(!roomCollision.WireVisible);
+            roomWireLabel.text = roomCollision.WireVisible ? "空間線 ON" : "空間線 OFF";
+            feedback = roomCollision.WireVisible ? "水色の線が部屋の当たり判定（MRのみ・部屋読込が必要）" : "空間線を非表示";
+        }
 
         void SelectVoiceFont(int index, bool save)
         {

@@ -56,6 +56,10 @@ namespace Koekatamarin
                 label.GetComponent<MeshRenderer>().sharedMaterial = material;
             }
         }
+        // Keep the original proportions and fixed collision box at 100%.
+        // Apply when launching, so already flying words never grow into nearby geometry.
+        public void SetSize(float factor)
+        { transform.localScale = new Vector3(1, 1, .2f) * Mathf.Clamp(factor, .25f, 2f); }
         // 0: single-player callback; 1: network prefab; 2: network random red.
         public void Launch(string text, Pose pose, int style = 0)
         {

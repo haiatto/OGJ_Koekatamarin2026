@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Meta.XR.MRUtilityKit;
 using UnityEngine;
 #if UNITY_ANDROID
@@ -14,9 +15,37 @@ namespace Koekatamarin
         public EffectMesh mesh;
         bool busy;
         bool mixedReality = true;
+        CollisionWireframe wireframe;
+        readonly List<Collider> colliders = new List<Collider>();
+        float nextWireRefresh;
+        public bool WireVisible { get; private set; }
         public string Status { get; private set; } = "部屋: 未読込";
         public void SetMixedReality(bool value)
-        { mixedReality = value; mesh.ToggleEffectMeshColliders(value); }
+        {
+            mixedReality = value;
+            mesh.ToggleEffectMeshColliders(value);
+            RefreshWireframe();
+        }
+        public void SetWireVisible(bool value)
+        { WireVisible = value; RefreshWireframe(); }
+        void RefreshWireframe()
+        {
+            if (WireVisible && mixedReality)
+            {
+                if (wireframe == null) wireframe = gameObject.AddComponent<CollisionWireframe>();
+                colliders.Clear();
+                foreach (var item in mesh.EffectMeshObjects.Values) colliders.Add(item.collider);
+                wireframe.Refresh(colliders);
+            }
+            if (wireframe != null) wireframe.SetVisible(WireVisible && mixedReality);
+        }
+        void Update()
+        {
+            // MRUK can replace anchor meshes after a room update.
+            if (!WireVisible || !mixedReality || Time.unscaledTime < nextWireRefresh) return;
+            nextWireRefresh = Time.unscaledTime + .5f;
+            RefreshWireframe();
+        }
         public IEnumerator LoadAfterMicrophone(SpeechInput speech)
         {
             yield return null;
@@ -51,6 +80,7 @@ namespace Koekatamarin
                 if (this == null) return;
                 if (result != MRUK.LoadDeviceResult.Success)
                 { Status = "部屋: " + result + " / 部屋読込で再試行"; return; }
+                if (wireframe != null) wireframe.Clear();
                 mesh.DestroyMesh();
                 var room = scene.GetCurrentRoom();
                 if (room == null) { Status = "部屋: 空間設定がありません"; return; }
@@ -59,6 +89,7 @@ namespace Koekatamarin
                     (MRUKAnchor.SceneLabels)(-1) & ~MRUKAnchor.SceneLabels.GLOBAL_MESH;
                 mesh.CreateMesh(room);
                 mesh.ToggleEffectMeshColliders(mixedReality);
+                RefreshWireframe();
                 Status = "部屋: " + (global ? "メッシュ" : "壁・床・家具") + " 当たり判定 " + mesh.EffectMeshObjects.Count;
                 Debug.Log("ROOM_COLLISION_READY geometry=" + (global ? "mesh" : "anchors") + " count=" + mesh.EffectMeshObjects.Count);
             }

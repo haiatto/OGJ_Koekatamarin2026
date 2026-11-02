@@ -72,6 +72,16 @@ namespace Koekatamarin.Editor
             if (vr && (experience.IsMixedReality || experience.IsSwitching)) return;
             if (!fired)
             {
+                if (!Physics.GetIgnoreLayerCollision(8, 0) || Physics.GetIgnoreLayerCollision(8, 9) || Physics.GetIgnoreLayerCollision(8, 8))
+                    throw new System.InvalidOperationException("Voice collision layers must exclude menu and include room/other words");
+                var main = experience.rig.transform.Find("Control panel/Main controls");
+                if (main.Find("空間線 OFF") == null)
+                    throw new System.InvalidOperationException("Room wireframe control missing");
+                float initialSize = experience.VoiceSize;
+                for (int i = 0; i < 6; i++) experience.NextVoiceSize();
+                if (experience.VoiceSize != initialSize)
+                    throw new System.InvalidOperationException("Voice size cycle did not return to initial selection");
+                Debug.Log("KOEKATAMARIN_COLLISION_LAYERS_AND_SIZE_CYCLE_OK");
                 if (ip)
                 {
                     // A documentation preview must not publish the workstation's real interface addresses.

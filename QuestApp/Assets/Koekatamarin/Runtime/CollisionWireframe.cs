@@ -1,0 +1,115 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+
+namespace Koekatamarin
+{
+    // Draw the physics shape, not the EffectMesh's sometimes different visual geometry.
+    // Line topology works on Quest without geometry shaders or added colliders.
+    public sealed class CollisionWireframe : MonoBehaviour
+    {
+        sealed class Entry
+        {
+            public Collider source;
+            public Mesh sourceMesh;
+            public Vector3 center, size;
+            public GameObject view;
+            public Mesh lines;
+        }
+        readonly Dictionary<Collider, Entry> entries = new Dictionary<Collider, Entry>();
+        readonly HashSet<Collider> seen = new HashSet<Collider>();
+        readonly List<Collider> removed = new List<Collider>();
+        Material material;
+        bool visible;
+
+        public void SetVisible(bool value)
+        {
+            visible = value;
+            foreach (var entry in entries.Values)
+                if (entry.view != null) entry.view.SetActive(value && entry.source != null && entry.source.enabled);
+        }
+
+        public void Refresh(IEnumerable<Collider> colliders)
+        {
+            seen.Clear();
+            foreach (var collider in colliders)
+            {
+                if (collider == null) continue;
+                var id = collider;
+                seen.Add(id);
+                var sourceMesh = (collider as MeshCollider)?.sharedMesh;
+                var box = collider as BoxCollider;
+                var center = box != null ? box.center : Vector3.zero;
+                var size = box != null ? box.size : Vector3.zero;
+                if (entries.TryGetValue(id, out var entry))
+                {
+                    if (entry.view != null && entry.sourceMesh == sourceMesh && entry.center == center && entry.size == size)
+                    { entry.view.SetActive(visible && collider.enabled); continue; }
+                    Release(entry);
+                    entries.Remove(id);
+                }
+                var lines = BuildLines(collider);
+                if (lines == null) continue;
+                if (material == null)
+                    material = new Material(Resources.Load<Shader>("RoomCollisionWire"));
+                var view = new GameObject("Collision wireframe");
+                view.layer = 2; // Ignore Raycast; no collider is created.
+                view.transform.SetParent(collider.transform, false);
+                view.AddComponent<MeshFilter>().sharedMesh = lines;
+                var renderer = view.AddComponent<MeshRenderer>();
+                renderer.sharedMaterial = material;
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                view.SetActive(visible && collider.enabled);
+                entries.Add(id, new Entry { source = collider, sourceMesh = sourceMesh,
+                    center = center, size = size, view = view, lines = lines });
+            }
+            removed.Clear();
+            foreach (var pair in entries) if (!seen.Contains(pair.Key)) removed.Add(pair.Key);
+            foreach (var id in removed) { Release(entries[id]); entries.Remove(id); }
+        }
+
+        public static Mesh BuildLines(Collider collider)
+        {
+            Vector3[] vertices;
+            var indices = new List<int>();
+            if (collider is BoxCollider box)
+            {
+                vertices = new Vector3[8];
+                for (int i = 0; i < 8; i++)
+                    vertices[i] = box.center + Vector3.Scale(box.size * .5f,
+                        new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                for (int i = 0; i < 8; i++)
+                    for (int bit = 1; bit <= 4; bit <<= 1)
+                        if ((i & bit) == 0) { indices.Add(i); indices.Add(i | bit); }
+            }
+            else if (collider is MeshCollider meshCollider && meshCollider.sharedMesh != null && meshCollider.sharedMesh.isReadable)
+            {
+                var source = meshCollider.sharedMesh;
+                vertices = source.vertices;
+                int[] triangles = source.triangles;
+                var edges = new HashSet<ulong>();
+                for (int i = 0; i < triangles.Length; i += 3)
+                    for (int side = 0; side < 3; side++)
+                    {
+                        int a = triangles[i + side], b = triangles[i + (side + 1) % 3];
+                        ulong key = ((ulong)(uint)Mathf.Min(a, b) << 32) | (uint)Mathf.Max(a, b);
+                        if (edges.Add(key)) { indices.Add(a); indices.Add(b); }
+                    }
+            }
+            else return null;
+            var result = new Mesh { name = "Room collider edges", indexFormat = IndexFormat.UInt32 };
+            result.vertices = vertices;
+            result.SetIndices(indices, MeshTopology.Lines, 0);
+            result.RecalculateBounds();
+            return result;
+        }
+
+        static void Dispose(Object value)
+        { if (value != null) { if (Application.isPlaying) Destroy(value); else DestroyImmediate(value); } }
+        static void Release(Entry entry) { Dispose(entry.view); Dispose(entry.lines); }
+        public void Clear()
+        { foreach (var entry in entries.Values) Release(entry); entries.Clear(); }
+        void OnDestroy() { Clear(); Dispose(material); }
+    }
+}
