@@ -450,6 +450,12 @@ namespace Koekatamarin
                 addressStatus.text = network.Status + "\n相手 " + network.PeerCount + "台 / 戻ると通常の操作画面";
                 modeLabel.text = switching ? "切替中" : (mr ? "MR → VR" : "VR → MR");
                 alignmentLabel.text = sharedSpace.Capturing ? "やり直す" : sharedSpace.Ready ? "位置合わせ済" : "位置合わせ";
+                if (roomCollision != null)
+                {
+                    roomWireLabel.text = !roomCollision.WireVisible ? "空間線 OFF" :
+                        !mr ? "空間線 MRのみ" : roomCollision.WireReady ? "空間線 ON" : "空間線 待ち";
+                    if (roomCollision.WireVisible) status.text += "\n" + roomCollision.WireStatus;
+                }
             }
         }
 

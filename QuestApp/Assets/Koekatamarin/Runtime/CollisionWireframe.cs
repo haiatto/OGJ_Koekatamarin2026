@@ -21,6 +21,16 @@ namespace Koekatamarin
         readonly List<Collider> removed = new List<Collider>();
         Material material;
         bool visible;
+        public int ShapeCount => entries.Count;
+        public int EdgeCount { get; private set; }
+        public int UnavailableCount { get; private set; }
+        public static bool HasTriangles(Mesh mesh)
+        {
+            if (mesh == null || mesh.vertexCount < 3) return false;
+            for (int i = 0; i < mesh.subMeshCount; i++)
+                if (mesh.GetTopology(i) == MeshTopology.Triangles && mesh.GetIndexCount(i) >= 3) return true;
+            return false;
+        }
 
         public void SetVisible(bool value)
         {
@@ -32,6 +42,7 @@ namespace Koekatamarin
         public void Refresh(IEnumerable<Collider> colliders)
         {
             seen.Clear();
+            UnavailableCount = 0;
             foreach (var collider in colliders)
             {
                 if (collider == null) continue;
@@ -49,7 +60,7 @@ namespace Koekatamarin
                     entries.Remove(id);
                 }
                 var lines = BuildLines(collider);
-                if (lines == null) continue;
+                if (lines == null) { UnavailableCount++; continue; }
                 if (material == null)
                     material = new Material(Resources.Load<Shader>("RoomCollisionWire"));
                 var view = new GameObject("Collision wireframe");
@@ -67,6 +78,8 @@ namespace Koekatamarin
             removed.Clear();
             foreach (var pair in entries) if (!seen.Contains(pair.Key)) removed.Add(pair.Key);
             foreach (var id in removed) { Release(entries[id]); entries.Remove(id); }
+            EdgeCount = 0;
+            foreach (var entry in entries.Values) EdgeCount += (int)entry.lines.GetIndexCount(0) / 2;
         }
 
         public static Mesh BuildLines(Collider collider)
@@ -83,7 +96,7 @@ namespace Koekatamarin
                     for (int bit = 1; bit <= 4; bit <<= 1)
                         if ((i & bit) == 0) { indices.Add(i); indices.Add(i | bit); }
             }
-            else if (collider is MeshCollider meshCollider && meshCollider.sharedMesh != null && meshCollider.sharedMesh.isReadable)
+            else if (collider is MeshCollider meshCollider && HasTriangles(meshCollider.sharedMesh) && meshCollider.sharedMesh.isReadable)
             {
                 var source = meshCollider.sharedMesh;
                 vertices = source.vertices;
@@ -109,7 +122,7 @@ namespace Koekatamarin
         { if (value != null) { if (Application.isPlaying) Destroy(value); else DestroyImmediate(value); } }
         static void Release(Entry entry) { Dispose(entry.view); Dispose(entry.lines); }
         public void Clear()
-        { foreach (var entry in entries.Values) Release(entry); entries.Clear(); }
+        { foreach (var entry in entries.Values) Release(entry); entries.Clear(); EdgeCount = 0; UnavailableCount = 0; }
         void OnDestroy() { Clear(); Dispose(material); }
     }
 }

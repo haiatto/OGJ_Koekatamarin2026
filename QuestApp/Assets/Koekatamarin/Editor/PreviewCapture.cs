@@ -140,6 +140,27 @@ namespace Koekatamarin.Editor
                 Object.DestroyImmediate(reflectionImage);
                 Debug.Log("KOEKATAMARIN_WATER4_REFLECTION_OK mono renders=" + reflection.RenderCount);
             }
+            if (!vr && !ip)
+            {
+                // Synthetic collision fixtures only; this is not scanned Quest room data.
+                experience.SetPanelVisible(false);
+                foreach (var word in Object.FindObjectsByType<WordProjectile>(FindObjectsSortMode.None)) word.Retire();
+                var fixture = new GameObject("Synthetic room wire preview");
+                fixture.transform.SetPositionAndRotation(camera.transform.TransformPoint(new Vector3(0, 0, 2)),
+                    camera.transform.rotation * Quaternion.Euler(15, 30, 0));
+                var box = fixture.AddComponent<BoxCollider>();
+                box.size = new Vector3(1.2f, .7f, .8f);
+                var wire = fixture.AddComponent<CollisionWireframe>();
+                wire.Refresh(new[] { box });
+                wire.SetVisible(true);
+                camera.Render();
+                RenderTexture.active = render;
+                image.ReadPixels(new Rect(0, 0, 1440, 1000), 0, 0);
+                image.Apply();
+                File.WriteAllBytes("../.work/quest-preview-collision.png", image.EncodeToPNG());
+                Debug.Log("KOEKATAMARIN_WIRE_FIXTURE_RENDERED edges=" + wire.EdgeCount);
+                Object.DestroyImmediate(fixture);
+            }
             camera.targetTexture = null;
             RenderTexture.active = null;
             Object.DestroyImmediate(image);

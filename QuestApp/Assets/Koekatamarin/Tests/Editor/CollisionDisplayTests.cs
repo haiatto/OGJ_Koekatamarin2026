@@ -8,6 +8,37 @@ namespace Koekatamarin.Tests
     public sealed class CollisionDisplayTests
     {
         [Test]
+        public void MissingOrEmptyRoomMeshIsNotReportedAsDrawableAndCanRecover()
+        {
+            var go = new GameObject("Room awaiting mesh");
+            var owner = new GameObject("Wire display");
+            var source = new Mesh();
+            try
+            {
+                Assert.That(CollisionWireframe.HasTriangles(source), Is.False);
+                var collider = go.AddComponent<MeshCollider>();
+                var display = owner.AddComponent<CollisionWireframe>();
+                display.SetVisible(true);
+                display.Refresh(new[] { collider });
+                Assert.That(display.ShapeCount, Is.Zero);
+                Assert.That(display.EdgeCount, Is.Zero);
+                Assert.That(display.UnavailableCount, Is.EqualTo(1));
+                source.vertices = new[] { Vector3.zero, Vector3.right, Vector3.up };
+                source.triangles = new[] { 0, 1, 2 };
+                collider.sharedMesh = source;
+                Assert.That(CollisionWireframe.HasTriangles(source), Is.True);
+                display.Refresh(new[] { collider });
+                Assert.That(display.ShapeCount, Is.EqualTo(1));
+                Assert.That(display.EdgeCount, Is.EqualTo(3));
+                Assert.That(display.UnavailableCount, Is.Zero);
+                display.Clear();
+                Assert.That(display.ShapeCount, Is.Zero);
+                Assert.That(display.EdgeCount, Is.Zero);
+            }
+            finally { Object.DestroyImmediate(owner); Object.DestroyImmediate(go); Object.DestroyImmediate(source); }
+        }
+
+        [Test]
         public void BoxDisplayFollowsActualColliderAndDoesNotChangePhysics()
         {
             var owner = new GameObject("Display owner");
