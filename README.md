@@ -2,6 +2,18 @@
 
 2013年のOculus DK1作品「コエカタマリン」を、Meta Quest 3向けに復活させるプロジェクトです。
 
+## Quest 3で試す
+
+**[動作確認済みAPKをダウンロード：0.11.0（約509 MB）](https://github.com/haiatto/OGJ_Koekatamarin2026/releases/download/v0.11.0/Koekatamarin2026-0.11.0-Quest3.apk)**
+
+Quest 3単体で動く開発中の試用版です。Unityのインストールは不要で、日本語音声認識モデルも同梱しています。[リリース詳細・確認済みの動作・既知の問題](https://github.com/haiatto/OGJ_Koekatamarin2026/releases/tag/v0.11.0)。
+
+1. Questを開発者モードにし、USBデバッグを許可してAPKをサイドロードします。ADBなら `adb install -r Koekatamarin2026-0.11.0-Quest3.apk` で導入できます。
+2. Questの提供元不明アプリから起動し、マイク・空間データのアクセスを許可します。初期状態はMR・音声入力ONです。認識モデルの準備が終わってから話してください。
+3. 話すと文字が飛びます。無言でも文字が出る場合は「最低音量 ＋」で黄色い閾値線を無言時の音量ゲージより上に調整してください。「空間線」をONにして見回すと、周囲の当たり判定も表示できます。事前の部屋スキャンは不要です。
+
+[詳しい導入・実機確認手順](docs/device-validation.ja.md)・[音声／コントローラー／手の操作](docs/modern-controls.ja.md)。音声認識の訂正による文字の多重発射は、引き続き修正対象です。
+
 原作: [haiatto/OGJ_Koekatamarin](https://github.com/haiatto/OGJ_Koekatamarin)
 
 原作の取得コミット: `c07556014bbb4a17f4973f38aac01426bd11b4ea`
