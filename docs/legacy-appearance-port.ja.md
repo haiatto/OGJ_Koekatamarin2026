@@ -24,7 +24,7 @@
 - 採用TTFのSHA-256: `22ed9770a12a3b4ee9aa7f006161829d8e760b492bab59d9d4ca5b08a4d47af9`。バイナリ無改変。
 - `QuestApp/Assets/Koekatamarin/ThirdParty/Mikachan-LICENSE.txt` に利用条件を保存し、APKの `assets/Notices/` にも同梱します。
 
-原作保存領域・過去のGit履歴に存在するHGフォントの扱いは別途未解決です。今回、過去の履歴や原作のファイルは変更していません。
+2026-11-03にユーザー指定で、原作保存領域と全公開履歴からHGフォント本体、フォントを埋め込んだ旧ビルドデータ、過去のUnityキャッシュを除外しました。新版の3書体と表現は維持します。[削除範囲](font-history-cleanup.ja.md)。
 
 ### ラノベPOPと追加方法
 

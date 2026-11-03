@@ -237,3 +237,11 @@ pip-log.txt
 /QuestApp/Assets/StreamingAssets/Speech/Reazon/tokens.txt
 /QuestApp/Assets/Plugins/Android/Speech/**/*.so
 /QuestApp/Assets/Plugins/x86_64/Speech/*.dll
+
+# Do not reintroduce HG fonts or legacy build containers embedding them.
+**/HGRPP*.TTF
+**/HGRPP*.TTF.meta
+**/HGRPP*.TTC
+/New Unity Project/test_Data/sharedassets0.assets
+/ReleseFolder/koekatamariProto_Data/sharedassets0.assets
+/ReleseFolder/koekatamariProtoForMac.app/Contents/Data/sharedassets0.assets
